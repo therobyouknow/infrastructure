@@ -1,0 +1,248 @@
+robdavisprojects@DesktopMedionUbuntu:~$ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+[sudo] password for robdavisprojects: 
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'docker.io' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'docker-doc' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'docker-compose' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'docker-compose-v2' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'podman-docker' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'containerd' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'runc' is not installed, so not removed
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
+robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get update
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Hit:2 http://gb.archive.ubuntu.com/ubuntu noble InRelease                      
+Get:3 http://gb.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]     
+Get:4 http://gb.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]   
+Hit:5 https://ppa.launchpadcontent.net/phoerious/keepassxc/ubuntu noble InRelease
+Hit:6 https://dl.winehq.org/wine-builds/ubuntu noble InRelease                 
+Get:7 https://dl.google.com/linux/chrome/deb stable InRelease [1,825 B]        
+Get:8 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [911 kB]
+Get:9 http://gb.archive.ubuntu.com/ubuntu noble-updates/main i386 Packages [482 kB]
+Get:10 http://security.ubuntu.com/ubuntu noble-security/main i386 Packages [301 kB]
+Get:11 http://security.ubuntu.com/ubuntu noble-security/main Translation-en [167 kB]
+Get:12 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [21.6 kB]
+Get:13 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1,217 kB]
+Get:14 http://gb.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1,159 kB]
+Get:15 http://security.ubuntu.com/ubuntu noble-security/restricted Translation-en [258 kB]
+Get:16 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Components [212 B]
+Get:17 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [52.2 kB]
+Get:18 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [212 B]
+Hit:19 http://apt.connectify.me speedify InRelease                             
+Get:20 http://gb.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [244 kB]
+Get:21 http://gb.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [161 kB]
+Hit:22 https://www.synaptics.com/sites/default/files/Ubuntu stable InRelease   
+Get:23 http://gb.archive.ubuntu.com/ubuntu noble-updates/restricted i386 Packages [19.2 kB]
+Get:24 http://gb.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Components [212 B]
+Get:25 http://gb.archive.ubuntu.com/ubuntu noble-updates/universe i386 Packages [661 kB]
+Get:26 http://gb.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1,092 kB]
+Get:27 https://dl.google.com/linux/chrome/deb stable/main amd64 Packages [1,203 B]
+Get:28 http://gb.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [376 kB]
+Get:29 http://gb.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [22.1 kB]
+Get:30 http://gb.archive.ubuntu.com/ubuntu noble-updates/multiverse i386 Packages [4,240 B]
+Get:31 http://gb.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:32 http://gb.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [7,064 B]
+Get:33 http://gb.archive.ubuntu.com/ubuntu noble-backports/restricted amd64 Components [216 B]
+Get:34 http://gb.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [16.3 kB]
+Get:35 http://gb.archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
+Fetched 7,556 kB in 2s (4,727 kB/s) 
+Reading package lists... Done
+robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get install ca-certificates curl
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+ca-certificates is already the newest version (20240203).
+ca-certificates set to manually installed.
+curl is already the newest version (8.5.0-2ubuntu10.6).
+curl set to manually installed.
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+0 to upgrade, 0 to newly install, 0 to remove and 12 not to upgrade.
+robdavisprojects@DesktopMedionUbuntu:~$ sudo install -m 0755 -d /etc/apt/keyrings
+robdavisprojects@DesktopMedionUbuntu:~$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+robdavisprojects@DesktopMedionUbuntu:~$ sudo chmod a+r /etc/apt/keyrings/docker.asc
+robdavisprojects@DesktopMedionUbuntu:~$ echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get update
+Hit:1 http://gb.archive.ubuntu.com/ubuntu noble InRelease
+Hit:2 http://gb.archive.ubuntu.com/ubuntu noble-updates InRelease                                                               
+Get:3 https://download.docker.com/linux/ubuntu noble InRelease [48.8 kB]                                                        
+Hit:4 http://gb.archive.ubuntu.com/ubuntu noble-backports InRelease                                                             
+Hit:5 https://dl.winehq.org/wine-builds/ubuntu noble InRelease                                                                  
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease                                                                
+Hit:7 https://dl.google.com/linux/chrome/deb stable InRelease                                                                   
+Hit:8 http://apt.connectify.me speedify InRelease                                                                  
+Get:9 https://download.docker.com/linux/ubuntu noble/stable amd64 Packages [26.9 kB]         
+Hit:10 https://ppa.launchpadcontent.net/phoerious/keepassxc/ubuntu noble InRelease
+Hit:11 https://www.synaptics.com/sites/default/files/Ubuntu stable InRelease
+Fetched 75.7 kB in 1s (81.1 kB/s)
+Reading package lists... Done
+robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following package was automatically installed and is no longer required:
+  mailcap
+Use 'sudo apt autoremove' to remove it.
+The following additional packages will be installed:
+  docker-ce-rootless-extras git git-man liberror-perl libslirp0 pigz slirp4netns
+Suggested packages:
+  cgroupfs-mount | cgroup-lite docker-model-plugin git-daemon-run | git-daemon-sysvinit git-doc git-email git-gui gitk gitweb
+  git-cvs git-mediawiki git-svn
+The following NEW packages will be installed
+  containerd.io docker-buildx-plugin docker-ce docker-ce-cli docker-ce-rootless-extras docker-compose-plugin git git-man
+  liberror-perl libslirp0 pigz slirp4netns
+0 to upgrade, 12 to newly install, 0 to remove and 12 not to upgrade.
+Need to get 108 MB of archives.
+After this operation, 453 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://gb.archive.ubuntu.com/ubuntu noble/universe amd64 pigz amd64 2.8-1 [65.6 kB]
+Get:2 http://gb.archive.ubuntu.com/ubuntu noble/main amd64 liberror-perl all 0.17029-2 [25.6 kB]         
+Get:3 http://gb.archive.ubuntu.com/ubuntu noble-updates/main amd64 git-man all 1:2.43.0-1ubuntu7.2 [1,100 kB]
+Get:4 https://download.docker.com/linux/ubuntu noble/stable amd64 containerd.io amd64 1.7.27-1 [30.5 MB]
+Get:5 http://gb.archive.ubuntu.com/ubuntu noble-updates/main amd64 git amd64 1:2.43.0-1ubuntu7.2 [3,679 kB]
+Get:6 http://gb.archive.ubuntu.com/ubuntu noble/main amd64 libslirp0 amd64 4.7.0-1ubuntu3 [63.8 kB]
+Get:7 http://gb.archive.ubuntu.com/ubuntu noble/universe amd64 slirp4netns amd64 1.2.1-1build2 [34.9 kB]
+Get:8 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-ce-cli amd64 5:28.3.0-1~ubuntu.24.04~noble [16.5 MB]
+Get:9 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-ce amd64 5:28.3.0-1~ubuntu.24.04~noble [19.7 MB]
+Get:10 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-buildx-plugin amd64 0.25.0-1~ubuntu.24.04~noble [15.6 MB]
+Get:11 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-ce-rootless-extras amd64 5:28.3.0-1~ubuntu.24.04~noble [6,480 kB]
+Get:12 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-compose-plugin amd64 2.37.3-1~ubuntu.24.04~noble [14.2 MB]
+Fetched 108 MB in 12s (9,241 kB/s)                                                                                              
+Selecting previously unselected package containerd.io.
+(Reading database ... 220810 files and directories currently installed.)
+Preparing to unpack .../00-containerd.io_1.7.27-1_amd64.deb ...
+Unpacking containerd.io (1.7.27-1) ...
+Selecting previously unselected package docker-ce-cli.
+Preparing to unpack .../01-docker-ce-cli_5%3a28.3.0-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce-cli (5:28.3.0-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-ce.
+Preparing to unpack .../02-docker-ce_5%3a28.3.0-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce (5:28.3.0-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package pigz.
+Preparing to unpack .../03-pigz_2.8-1_amd64.deb ...
+Unpacking pigz (2.8-1) ...
+Selecting previously unselected package docker-buildx-plugin.
+Preparing to unpack .../04-docker-buildx-plugin_0.25.0-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-buildx-plugin (0.25.0-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-ce-rootless-extras.
+Preparing to unpack .../05-docker-ce-rootless-extras_5%3a28.3.0-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce-rootless-extras (5:28.3.0-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-compose-plugin.
+Preparing to unpack .../06-docker-compose-plugin_2.37.3-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-compose-plugin (2.37.3-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package liberror-perl.
+Preparing to unpack .../07-liberror-perl_0.17029-2_all.deb ...
+Unpacking liberror-perl (0.17029-2) ...
+Selecting previously unselected package git-man.
+Preparing to unpack .../08-git-man_1%3a2.43.0-1ubuntu7.2_all.deb ...
+Unpacking git-man (1:2.43.0-1ubuntu7.2) ...
+Selecting previously unselected package git.
+Preparing to unpack .../09-git_1%3a2.43.0-1ubuntu7.2_amd64.deb ...
+Unpacking git (1:2.43.0-1ubuntu7.2) ...
+Selecting previously unselected package libslirp0:amd64.
+Preparing to unpack .../10-libslirp0_4.7.0-1ubuntu3_amd64.deb ...
+Unpacking libslirp0:amd64 (4.7.0-1ubuntu3) ...
+Selecting previously unselected package slirp4netns.
+Preparing to unpack .../11-slirp4netns_1.2.1-1build2_amd64.deb ...
+Unpacking slirp4netns (1.2.1-1build2) ...
+Setting up liberror-perl (0.17029-2) ...
+Setting up docker-buildx-plugin (0.25.0-1~ubuntu.24.04~noble) ...
+Setting up containerd.io (1.7.27-1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service → /usr/lib/systemd/system/containerd.service.
+Setting up docker-compose-plugin (2.37.3-1~ubuntu.24.04~noble) ...
+Setting up docker-ce-cli (5:28.3.0-1~ubuntu.24.04~noble) ...
+Setting up libslirp0:amd64 (4.7.0-1ubuntu3) ...
+Setting up pigz (2.8-1) ...
+Setting up git-man (1:2.43.0-1ubuntu7.2) ...
+Setting up docker-ce-rootless-extras (5:28.3.0-1~ubuntu.24.04~noble) ...
+Setting up slirp4netns (1.2.1-1build2) ...
+Setting up docker-ce (5:28.3.0-1~ubuntu.24.04~noble) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+Setting up git (1:2.43.0-1ubuntu7.2) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.4) ...
+robdavisprojects@DesktopMedionUbuntu:~$ groups
+robdavisprojects adm cdrom sudo dip plugdev vboxusers lpadmin lxd sambashare
+robdavisprojects@DesktopMedionUbuntu:~$ sudo usermod -a -G docker robdavisprojects
+robdavisprojects@DesktopMedionUbuntu:~$ newgrp docker
+robdavisprojects@DesktopMedionUbuntu:~$  sudo docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+e6590344b1a5: Pull complete 
+Digest: sha256:940c619fbd418f9b2b1b63e25d8861f9cc1b46e3fc8b018ccfe8b78f19b8cc4f
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+robdavisprojects@DesktopMedionUbuntu:~$ 

@@ -1,5 +1,5 @@
-robdavisprojects@DesktopMedionUbuntu:~$ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
-[sudo] password for robdavisprojects: 
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+[sudo] password for robdavisselectamixmusic.coms: 
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
@@ -56,7 +56,7 @@ The following package was automatically installed and is no longer required:
   mailcap
 Use 'sudo apt autoremove' to remove it.
 0 to upgrade, 0 to newly install, 0 to remove and 10 not to upgrade.
-robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get update
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo apt-get update
 Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
 Hit:2 http://gb.archive.ubuntu.com/ubuntu noble InRelease                      
 Get:3 http://gb.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]     
@@ -94,7 +94,7 @@ Get:34 http://gb.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Compon
 Get:35 http://gb.archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
 Fetched 7,556 kB in 2s (4,727 kB/s) 
 Reading package lists... Done
-robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get install ca-certificates curl
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo apt-get install ca-certificates curl
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
@@ -106,14 +106,14 @@ The following package was automatically installed and is no longer required:
   mailcap
 Use 'sudo apt autoremove' to remove it.
 0 to upgrade, 0 to newly install, 0 to remove and 12 not to upgrade.
-robdavisprojects@DesktopMedionUbuntu:~$ sudo install -m 0755 -d /etc/apt/keyrings
-robdavisprojects@DesktopMedionUbuntu:~$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-robdavisprojects@DesktopMedionUbuntu:~$ sudo chmod a+r /etc/apt/keyrings/docker.asc
-robdavisprojects@DesktopMedionUbuntu:~$ echo \
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo install -m 0755 -d /etc/apt/keyrings
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo chmod a+r /etc/apt/keyrings/docker.asc
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get update
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo apt-get update
 Hit:1 http://gb.archive.ubuntu.com/ubuntu noble InRelease
 Hit:2 http://gb.archive.ubuntu.com/ubuntu noble-updates InRelease                                                               
 Get:3 https://download.docker.com/linux/ubuntu noble InRelease [48.8 kB]                                                        
@@ -127,7 +127,7 @@ Hit:10 https://ppa.launchpadcontent.net/phoerious/keepassxc/ubuntu noble InRelea
 Hit:11 https://www.synaptics.com/sites/default/files/Ubuntu stable InRelease
 Fetched 75.7 kB in 1s (81.1 kB/s)
 Reading package lists... Done
-robdavisprojects@DesktopMedionUbuntu:~$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
@@ -213,11 +213,11 @@ Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/
 Setting up git (1:2.43.0-1ubuntu7.2) ...
 Processing triggers for man-db (2.12.0-4build2) ...
 Processing triggers for libc-bin (2.39-0ubuntu8.4) ...
-robdavisprojects@DesktopMedionUbuntu:~$ groups
-robdavisprojects adm cdrom sudo dip plugdev vboxusers lpadmin lxd sambashare
-robdavisprojects@DesktopMedionUbuntu:~$ sudo usermod -a -G docker robdavisprojects
-robdavisprojects@DesktopMedionUbuntu:~$ newgrp docker
-robdavisprojects@DesktopMedionUbuntu:~$  sudo docker run hello-world
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ groups
+robdavisselectamixmusic.coms adm cdrom sudo dip plugdev vboxusers lpadmin lxd sambashare
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ sudo usermod -a -G docker robdavisselectamixmusic.coms
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ newgrp docker
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$  sudo docker run hello-world
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
 e6590344b1a5: Pull complete 
@@ -245,4 +245,4 @@ Share images, automate workflows, and more with a free Docker ID:
 For more examples and ideas, visit:
  https://docs.docker.com/get-started/
 
-robdavisprojects@DesktopMedionUbuntu:~$ 
+robdavisselectamixmusic.coms@DesktopMedionUbuntu:~$ 

@@ -110,7 +110,7 @@ Try these:
 
 https://github.com/ddev/ddev/issues/5026#issuecomment-1609037437
 
-https://stackoverflow.com/questions/65111024/ddev-project-starts-up-site-with-http-instead-of-https
+https://stackoverflow.com/questions/65111024/ddev-selectamixmusic.com-starts-up-site-with-http-instead-of-https
 
 ### Other research
 

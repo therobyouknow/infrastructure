@@ -1,0 +1,24 @@
+mkdir selectamixmusic.com
+mkdir -p selectamixmusic.com/deployment_environments
+mkdir -p selectamixmusic.com/deployment_environments/live/assets
+mkdir -p selectamixmusic.com/deployment_environments/staging/assets
+mkdir -p selectamixmusic.com/deployment_environments/staging/assets/public/files
+mkdir -p selectamixmusic.com/releases
+#mkdir -p selectamixmusic.com/releases/0.1/code
+cd selectamixmusic.com/releases/0.1
+chown -R rob:rob code
+
+git clone $clone-ssh code
+cd web/sites/default
+ln -s ../../../../../../deployment_environments/live/assets/public/files .
+ln -s ../../../../../../settings/1/settings.local.php .
+mkdir -p selectamixmusic.com/releases/0.1/database-backups
+mkdir -p selectamixmusic.com/settings/1
+mkdir -p selectamixmusic.com/settings/2
+cd selectamixmusic.com/deployment_environments/live
+ln -s ../../releases/0.1/code/web docroot
+
+
+
+chown -R www-data:www-data code
+

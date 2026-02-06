@@ -1,7 +1,10 @@
 #!/bin/bash
 # Create Database Script
-# Usage: ./create_database.sh [domain] [db_number]
+# Usage: ./create_database.sh [domain] [db_number] [shortname]
 # Example: ./create_database.sh example.com 1
+# Example: ./create_database.sh example.com 1 excom
+# The optional shortname overrides the domain-derived database/user name.
+# Useful when multiple sites share similar domain names (e.g. example.com / example.org).
 
 set -e
 
@@ -24,20 +27,26 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 2 ]; then
-    print_error "Usage: $0 [domain] [db_number]"
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+    print_error "Usage: $0 [domain] [db_number] [shortname]"
     print_error "Example: $0 example.com 1"
+    print_error "Example: $0 example.com 1 excom"
     exit 1
 fi
 
 DOMAIN=$1
 DB_NUMBER=$2
+SHORTNAME=$3
 
-# Create database name and username from domain
-# Replace dots and dashes with underscores
-CLEAN_DOMAIN=$(echo "${DOMAIN}" | sed 's/[.-]/_/g')
-DB_NAME="d${CLEAN_DOMAIN}_${DB_NUMBER}"
-DB_USER="u${CLEAN_DOMAIN}_${DB_NUMBER}"
+# Create database name and username
+# Use shortname if provided, otherwise derive from domain
+if [ -n "${SHORTNAME}" ]; then
+    CLEAN_NAME=$(echo "${SHORTNAME}" | sed 's/[.-]/_/g')
+else
+    CLEAN_NAME=$(echo "${DOMAIN}" | sed 's/[.-]/_/g')
+fi
+DB_NAME="d${CLEAN_NAME}_${DB_NUMBER}"
+DB_USER="u${CLEAN_NAME}_${DB_NUMBER}"
 
 # Generate a random password
 DB_PASS=$(openssl rand -base64 16 | tr -d "=+/" | cut -c1-20)

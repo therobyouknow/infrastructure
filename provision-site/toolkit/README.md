@@ -74,16 +74,26 @@ Generates MySQL commands and settings.local.php configuration for a new database
 
 **Usage:**
 ```bash
-./create_database.sh [domain] [db_number]
+./create_database.sh [domain] [db_number] [shortname]
 ```
 
-**Example:**
+**Examples:**
 ```bash
 ./create_database.sh example.com 1
+./create_database.sh example.com 1 excom
+./create_database.sh example.org 1 exorg
 ```
+
+The optional `shortname` parameter lets you define a custom prefix for the database and user names instead of deriving them from the domain. This is useful when you have sites with the same name but different TLD endings (e.g. `example.com` and `example.org`).
+
+| Invocation | DB Name | DB User |
+|---|---|---|
+| `./create_database.sh example.com 1` | `dexample_com_1` | `uexample_com_1` |
+| `./create_database.sh example.com 1 excom` | `dexcom_1` | `uexcom_1` |
 
 **What it does:**
 - Generates database name, username, and secure password
+- Uses shortname for naming if provided, otherwise derives from domain
 - Creates SQL commands to set up the database
 - Provides settings.local.php configuration
 - Optionally executes the SQL commands
@@ -236,8 +246,9 @@ Here's the typical workflow for setting up a new Drupal site:
 # 1. Create site structure
 ./create_site_structure.sh 05 example.com
 
-# 2. Create database
+# 2. Create database (optional shortname as 3rd argument)
 ./create_database.sh example.com 1
+# Or with a shortname: ./create_database.sh example.com 1 excom
 
 # 3. Manually create settings.local.php
 # Copy the output from step 2 into:

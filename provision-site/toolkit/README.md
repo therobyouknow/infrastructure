@@ -7,7 +7,7 @@ A collection of bash scripts to automate management of Drupal 10/11 sites on Dig
 These scripts help you manage multiple Drupal sites with a structured deployment workflow including:
 - Site structure creation
 - Release management
-- Database backups and restores
+- Database backups, restores, and remote fetching
 - Code deployment
 - Drush command execution
 - Apache vhost configuration
@@ -218,7 +218,28 @@ Restores a database from a backup file.
 - Restores database from backup file
 - Handles both gzipped and plain SQL files
 
-### 9. drush_run.sh
+### 9. fetch_db_dump.sh
+Fetches a database dump from a remote server to your local machine. Runs locally — SSHes in, dumps the database, downloads via SCP, and cleans up.
+
+**Usage:**
+```bash
+./fetch_db_dump.sh [ssh_host] [category] [domain] [db_number]
+```
+
+**Example:**
+```bash
+./fetch_db_dump.sh server03 05 example.com 1
+```
+
+**What it does:**
+- SSHes into the server using the host alias from `~/.ssh/config`
+- Reads credentials from settings.local.php on the remote
+- Runs `mysqldump | gzip` on the remote, writing to `/tmp`
+- Downloads the dump file to the current local directory via SCP
+- Removes the temp file from the server
+- Prints the local file path
+
+### 10. drush_run.sh
 Helper script to run Drush commands on any site/environment.
 
 **Usage:**
@@ -329,6 +350,17 @@ git pull
 # Or use the drush_run helper:
 ./drush_run.sh 05 example.com live "updb -y"
 ./drush_run.sh 05 example.com live "cr"
+```
+
+## Workflow: Fetching a Remote Database Locally
+
+```bash
+# 1. Download the live database from the server
+./fetch_db_dump.sh server03 05 example.com 1
+# Outputs: /path/to/dexample_com_1_20260206_143000.sql.gz
+
+# 2. Restore it into a local or staging environment
+./restore_db.sh 05 example.com 1 dexample_com_1_20260206_143000.sql.gz
 ```
 
 ## Tips and Best Practices

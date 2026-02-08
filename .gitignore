@@ -25,3 +25,5 @@
 **/Temporary Items
 **/.apdisk
 
+# Synced Drupal files directory (created by sync_files.sh)
+**/files/

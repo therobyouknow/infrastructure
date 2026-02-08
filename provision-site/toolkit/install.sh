@@ -45,11 +45,13 @@ SCRIPTS=(
     "update_symlink.sh"
     "backup_db.sh"
     "restore_db.sh"
-    "fetch_db_dump.sh"
-    "sync_files.sh"
     "site_status.sh"
     "drush_run.sh"
 )
+
+# Note: fetch_db_dump.sh and sync_files.sh are local-dev scripts
+# that run on your workstation (macOS/Linux), not on the server.
+# They are not included in this server-side installation.
 
 # Check if all scripts exist
 MISSING=0
@@ -91,10 +93,12 @@ echo "  deploy [category] [domain] [environment] [version]"
 echo "  update_symlink [category] [domain] [environment] [version]"
 echo "  backup_db [category] [domain] [db_number]"
 echo "  restore_db [category] [domain] [db_number] [backup_file]"
-echo "  fetch_db_dump [ssh_host] [category] [domain] [db_number]"
-echo "  sync_files [push|pull] [ssh_host] [category] [domain] [environment]"
 echo "  site_status [category]"
 echo "  drush_run [category] [domain] [environment] [command]"
+echo ""
+echo "Local-dev scripts (not installed, run standalone from your workstation):"
+echo "  ./fetch_db_dump.sh [ssh_host] [category] [domain] [db_number]"
+echo "  ./sync_files.sh [push|pull] [ssh_host] [category] [domain] [environment]"
 echo ""
 print_status "Run any command without arguments to see usage instructions"
 print_status "Check ${SCRIPT_DIR}/README.md for detailed documentation"

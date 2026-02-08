@@ -57,6 +57,9 @@ Each site follows this structure:
 
 ## Scripts Overview
 
+**Server scripts** (1–8, 11–13) run on the server and can be installed system-wide with `install.sh`.
+**Local-dev scripts** (9–10) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
+
 ### 1. create_site_structure.sh
 Creates the complete directory structure for a new site.
 
@@ -225,8 +228,8 @@ Restores a database from a backup file.
 - Restores database from backup file
 - Handles both gzipped and plain SQL files
 
-### 9. fetch_db_dump.sh
-Fetches a database dump from a remote server to your local machine. Runs locally — SSHes in, dumps the database, downloads via SCP, and cleans up.
+### 9. fetch_db_dump.sh *(local-dev)*
+Fetches a database dump from a remote server to your local machine. Runs locally on your workstation (macOS or Linux) — SSHes in, dumps the database, downloads via SCP, and cleans up.
 
 **Usage:**
 ```bash
@@ -246,8 +249,8 @@ Fetches a database dump from a remote server to your local machine. Runs locally
 - Removes the temp file from the server
 - Prints the local file path
 
-### 10. sync_files.sh
-Syncs the Drupal public files directory between your local dev environment and a remote server. Runs locally — uses rsync over SSH to transfer files in either direction.
+### 10. sync_files.sh *(local-dev)*
+Syncs the Drupal public files directory between your local dev environment and a remote server. Runs locally on your workstation (macOS or Linux) — uses rsync over SSH to transfer files in either direction.
 
 **Usage:**
 ```bash

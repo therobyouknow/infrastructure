@@ -50,6 +50,10 @@ Each site follows this structure:
    ```bash
    chmod +x *.sh
    ```
+3. Optionally, install system-wide so commands are available without `./` or `.sh`:
+   ```bash
+   sudo ./install.sh
+   ```
 
 ## Scripts Overview
 

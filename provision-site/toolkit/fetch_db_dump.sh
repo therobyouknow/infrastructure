@@ -52,7 +52,16 @@ if [ -z "${DB_NAME}" ] || [ -z "${DB_USER}" ] || [ -z "${DB_PASS}" ]; then
 fi
 
 REMOTE_DUMP="/tmp/${DB_NAME}_${TIMESTAMP}.sql.gz"
-LOCAL_FILE="${DB_NAME}_${TIMESTAMP}.sql.gz"
+
+# Resolve local path relative to git root
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "${GIT_ROOT}" ]; then
+    print_error "Not inside a git repository. Run this from within your project."
+    exit 1
+fi
+LOCAL_DIR="${GIT_ROOT}/databases"
+mkdir -p "${LOCAL_DIR}"
+LOCAL_FILE="${LOCAL_DIR}/${DB_NAME}_${TIMESTAMP}.sql.gz"
 
 print_status "Dumping database: ${DB_NAME}"
 
@@ -61,15 +70,15 @@ ssh "${SSH_HOST}" "mysqldump -u'${DB_USER}' -p'${DB_PASS}' '${DB_NAME}' | gzip >
 
 # Download the dump file
 print_status "Downloading dump file..."
-scp "${SSH_HOST}:${REMOTE_DUMP}" "./${LOCAL_FILE}"
+scp "${SSH_HOST}:${REMOTE_DUMP}" "${LOCAL_FILE}"
 
 # Remove the temp file from the server
 ssh "${SSH_HOST}" "rm -f '${REMOTE_DUMP}'"
 
 # Check file size
-FILE_SIZE=$(stat -f%z "./${LOCAL_FILE}" 2>/dev/null || stat -c%s "./${LOCAL_FILE}" 2>/dev/null)
+FILE_SIZE=$(stat -f%z "${LOCAL_FILE}" 2>/dev/null || stat -c%s "${LOCAL_FILE}" 2>/dev/null)
 FILE_SIZE_MB=$(echo "scale=2; ${FILE_SIZE}/1048576" | bc)
 
 print_status "Download complete! (${FILE_SIZE_MB} MB)"
 
-echo "$(pwd)/${LOCAL_FILE}"
+echo "${LOCAL_FILE}"

@@ -245,7 +245,8 @@ Fetches a database dump from a remote server to your local machine. Runs locally
 - SSHes into the server using the host alias from `~/.ssh/config`
 - Reads credentials from settings.local.php on the remote
 - Runs `mysqldump | gzip` on the remote, writing to `/tmp`
-- Downloads the dump file to the current local directory via SCP
+- Downloads the dump file to `<git-root>/databases/` via SCP (creates the directory if needed)
+- Resolves the local path from the git root, so it works regardless of where you run the script from
 - Removes the temp file from the server
 - Prints the local file path
 
@@ -433,10 +434,10 @@ git pull
 ```bash
 # 1. Download the live database from the server
 ./fetch_db_dump.sh server03 05 example.com 1
-# Outputs: /path/to/dexample_com_1_20260206_143000.sql.gz
+# Outputs: <git-root>/databases/dexample_com_1_20260206_143000.sql.gz
 
 # 2. Restore it into a local or staging environment
-./restore_db.sh 05 example.com 1 dexample_com_1_20260206_143000.sql.gz
+./restore_db.sh 05 example.com 1 databases/dexample_com_1_20260206_143000.sql.gz
 ```
 
 ## Workflow: Syncing Site Files for Local Dev

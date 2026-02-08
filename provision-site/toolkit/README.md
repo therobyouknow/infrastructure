@@ -58,7 +58,7 @@ Each site follows this structure:
 ## Scripts Overview
 
 **Server scripts** (1–8, 11–13) run on the server and can be installed system-wide with `install.sh`.
-**Local-dev scripts** (9–10) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
+**Local-dev scripts** (9–10, 14) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
 
 ### 1. create_site_structure.sh
 Creates the complete directory structure for a new site.
@@ -335,6 +335,29 @@ sudo ./install.sh
 - Copies each script to `/usr/local/bin` with the `.sh` extension removed
 - Sets permissions to 755
 - After installation, commands are available globally (e.g. `deploy` instead of `./deploy.sh`)
+
+### 14. fetch_env_db_dump.sh *(local-dev)*
+Fetches a database dump from a remote server by environment name. Like `fetch_db_dump.sh`, but instead of specifying a database number, you specify an environment (e.g. `live`, `staging`) and the script automatically resolves the correct database by following the server-side symlink chain.
+
+**Usage:**
+```bash
+./fetch_env_db_dump.sh [ssh_host] [category] [domain] [environment]
+```
+
+**Example:**
+```bash
+./fetch_env_db_dump.sh server03 05 example.com live
+```
+
+**What it does:**
+- SSHes into the server using the host alias from `~/.ssh/config`
+- Resolves `deployment_environments/[env]/docroot/sites/default/settings.local.php` via `readlink -f` to find the actual settings file
+- Reads credentials from the resolved settings.local.php on the remote
+- Runs `mysqldump | gzip` on the remote, writing to `/tmp`
+- Downloads the dump file to `<git-root>/databases/` via SCP (creates the directory if needed)
+- Resolves the local path from the git root, so it works regardless of where you run the script from
+- Removes the temp file from the server
+- Prints the resolved settings path and the local file path
 
 ## Complete Workflow: Setting Up a New Site
 

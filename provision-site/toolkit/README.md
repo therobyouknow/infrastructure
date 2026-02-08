@@ -8,6 +8,7 @@ These scripts help you manage multiple Drupal sites with a structured deployment
 - Site structure creation
 - Release management
 - Database backups, restores, and remote fetching
+- File syncing between local dev and server
 - Code deployment
 - Drush command execution
 - Apache vhost configuration
@@ -239,7 +240,31 @@ Fetches a database dump from a remote server to your local machine. Runs locally
 - Removes the temp file from the server
 - Prints the local file path
 
-### 10. drush_run.sh
+### 10. sync_files.sh
+Syncs the Drupal public files directory between your local dev environment and a remote server. Runs locally — uses rsync over SSH to transfer files in either direction.
+
+**Usage:**
+```bash
+./sync_files.sh [push|pull] [ssh_host] [category] [domain] [environment]
+```
+
+**Examples:**
+```bash
+# Pull files from server to local
+./sync_files.sh pull server03 05 example.com live
+
+# Push files from local to server
+./sync_files.sh push server03 05 example.com live
+```
+
+**What it does:**
+- **pull**: Downloads `assets/public/files/` from the remote environment into `./files/` locally (creates the directory if needed)
+- **push**: Uploads `./files/` to the remote environment's `assets/public/files/` (requires `y/N` confirmation)
+- Uses `rsync -avz --progress` (archive mode, verbose, compressed, with progress)
+- Does NOT use `--delete` — only syncs new/changed files, never removes files on the target
+- Prints a summary with file count and size when done
+
+### 11. drush_run.sh
 Helper script to run Drush commands on any site/environment.
 
 **Usage:**
@@ -361,6 +386,25 @@ git pull
 
 # 2. Restore it into a local or staging environment
 ./restore_db.sh 05 example.com 1 dexample_com_1_20260206_143000.sql.gz
+```
+
+## Workflow: Syncing Site Files for Local Dev
+
+```bash
+# 1. Pull the live database
+./fetch_db_dump.sh server03 05 example.com 1
+
+# 2. Pull the live files directory
+./sync_files.sh pull server03 05 example.com live
+# Downloads to ./files/ in your current directory
+
+# 3. Restore the database locally
+./restore_db.sh 05 example.com 1 dexample_com_1_20260206_143000.sql.gz
+
+# 4. You now have a full local copy (database + files) for development
+
+# 5. When ready, push updated files back to the server
+./sync_files.sh push server03 05 example.com live
 ```
 
 ## Tips and Best Practices

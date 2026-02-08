@@ -12,6 +12,8 @@ These scripts help you manage multiple Drupal sites with a structured deployment
 - Code deployment
 - Drush command execution
 - Apache vhost configuration
+- Site status overview
+- System-wide installation
 
 ## Directory Structure
 
@@ -264,7 +266,35 @@ Syncs the Drupal public files directory between your local dev environment and a
 - Does NOT use `--delete` — only syncs new/changed files, never removes files on the target
 - Prints a summary with file count and size when done
 
-### 11. drush_run.sh
+### 11. site_status.sh
+Lists all sites and their current deployment status. Runs on the server — scans `/var/www/` for sites and reports on live/staging deployments, available releases, databases, and last backup date.
+
+**Usage:**
+```bash
+./site_status.sh [category]
+```
+
+**Examples:**
+```bash
+# Show all sites across all categories
+./site_status.sh
+
+# Show only sites in category 05
+./site_status.sh 05
+```
+
+**What it does:**
+- Scans `/var/www/` for site directories
+- For each site, reports:
+  - Live deployment status and release version
+  - Staging deployment status and release version
+  - Available releases
+  - Configured databases
+  - Last backup date
+- Detects broken symlinks
+- Prints a summary with total site count
+
+### 12. drush_run.sh
 Helper script to run Drush commands on any site/environment.
 
 **Usage:**
@@ -283,6 +313,19 @@ Helper script to run Drush commands on any site/environment.
 **What it does:**
 - Locates the correct code path for the environment
 - Runs any Drush command in the proper context
+
+### 13. install.sh
+Installs all management scripts system-wide to `/usr/local/bin` so they can be run from anywhere without the `./` prefix or `.sh` extension. Requires sudo.
+
+**Usage:**
+```bash
+sudo ./install.sh
+```
+
+**What it does:**
+- Copies each script to `/usr/local/bin` with the `.sh` extension removed
+- Sets permissions to 755
+- After installation, commands are available globally (e.g. `deploy` instead of `./deploy.sh`)
 
 ## Complete Workflow: Setting Up a New Site
 

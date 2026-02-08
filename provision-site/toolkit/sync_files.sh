@@ -45,7 +45,7 @@ if [ "${DIRECTION}" != "push" ] && [ "${DIRECTION}" != "pull" ]; then
 fi
 
 REMOTE_PATH="/var/www/${CATEGORY}/${DOMAIN}/deployment_environments/${ENVIRONMENT}/assets/public/files/"
-LOCAL_PATH="./files/"
+LOCAL_PATH="./web/sites/default/files/"
 
 print_status "Direction:   ${DIRECTION}"
 print_status "SSH host:    ${SSH_HOST}"

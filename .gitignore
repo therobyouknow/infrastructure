@@ -26,4 +26,4 @@
 **/.apdisk
 
 # Synced Drupal files directory (created by sync_files.sh)
-**/files/
+**/web/sites/default/files/

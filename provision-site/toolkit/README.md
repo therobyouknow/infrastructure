@@ -267,8 +267,9 @@ Syncs the Drupal public files directory between your local dev environment and a
 ```
 
 **What it does:**
-- **pull**: Downloads `assets/public/files/` from the remote environment into `./web/sites/default/files/` locally (creates the directory if needed)
-- **push**: Uploads `./web/sites/default/files/` to the remote environment's `assets/public/files/` (requires `y/N` confirmation)
+- **pull**: Downloads `assets/public/files/` from the remote environment into `<git-root>/web/sites/default/files/` locally (creates the directory if needed)
+- **push**: Uploads `<git-root>/web/sites/default/files/` to the remote environment's `assets/public/files/` (requires `y/N` confirmation)
+- Resolves the local path from the git root, so it works regardless of where you run the script from
 - Uses `rsync -avz --progress` (archive mode, verbose, compressed, with progress)
 - Does NOT use `--delete` — only syncs new/changed files, never removes files on the target
 - Prints a summary with file count and size when done
@@ -446,7 +447,7 @@ git pull
 
 # 2. Pull the live files directory
 ./sync_files.sh pull server03 05 example.com live
-# Downloads to ./web/sites/default/files/ in your current directory
+# Downloads to <git-root>/web/sites/default/files/
 
 # 3. Restore the database locally
 ./restore_db.sh 05 example.com 1 dexample_com_1_20260206_143000.sql.gz

@@ -45,7 +45,14 @@ if [ "${DIRECTION}" != "push" ] && [ "${DIRECTION}" != "pull" ]; then
 fi
 
 REMOTE_PATH="/var/www/${CATEGORY}/${DOMAIN}/deployment_environments/${ENVIRONMENT}/assets/public/files/"
-LOCAL_PATH="./web/sites/default/files/"
+
+# Resolve local path relative to git root
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "${GIT_ROOT}" ]; then
+    print_error "Not inside a git repository. Run this from within your project."
+    exit 1
+fi
+LOCAL_PATH="${GIT_ROOT}/web/sites/default/files/"
 
 print_status "Direction:   ${DIRECTION}"
 print_status "SSH host:    ${SSH_HOST}"

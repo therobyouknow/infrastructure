@@ -95,7 +95,7 @@ print_status "Download complete! (${FILE_SIZE_MB} MB)"
 cd "${GIT_ROOT}"
 
 print_status "Dropping local database..."
-ddev sql-drop -y
+ddev drush sql-drop -y
 
 print_status "Importing database into ddev..."
 ddev import-db --file="${LOCAL_FILE}"

@@ -1,8 +1,8 @@
 #!/bin/bash
 # Create Apache VHost Configuration Script
-# Usage: ./create_vhost.sh [category] [domain] [environment]
-# Example: ./create_vhost.sh 05 example.com live
-# Example: ./create_vhost.sh 05 example.com staging
+# Usage: ./create_vhost.sh [domain] [environment]
+# Example: ./create_vhost.sh example.com live
+# Example: ./create_vhost.sh example.com staging
 
 set -e
 
@@ -25,19 +25,26 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 3 ]; then
-    print_error "Usage: $0 [category] [domain] [environment]"
-    print_error "Example: $0 05 example.com live"
-    print_error "Example: $0 05 example.com staging"
+if [ "$#" -ne 2 ]; then
+    print_error "Usage: $0 [domain] [environment]"
+    print_error "Example: $0 example.com live"
+    print_error "Example: $0 example.com staging"
     exit 1
 fi
 
-CATEGORY=$1
-DOMAIN=$2
-ENVIRONMENT=$3
+DOMAIN=$1
+ENVIRONMENT=$2
 
 if [ "${ENVIRONMENT}" != "live" ] && [ "${ENVIRONMENT}" != "staging" ]; then
     print_error "Environment must be 'live' or 'staging'"
+    exit 1
+fi
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/"
     exit 1
 fi
 

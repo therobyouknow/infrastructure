@@ -1,8 +1,8 @@
 #!/bin/bash
 # Drush Helper Script - Run drush commands on any site
-# Usage: ./drush_run.sh [category] [domain] [environment] [drush_command]
-# Example: ./drush_run.sh 05 example.com live "updb -y"
-# Example: ./drush_run.sh 05 example.com staging "cr"
+# Usage: ./drush_run.sh [domain] [environment] [drush_command]
+# Example: ./drush_run.sh example.com live "updb -y"
+# Example: ./drush_run.sh example.com staging "cr"
 
 set -e
 
@@ -21,19 +21,26 @@ print_error() {
 }
 
 # Validate arguments
-if [ "$#" -lt 4 ]; then
-    print_error "Usage: $0 [category] [domain] [environment] [drush_command]"
-    print_error "Example: $0 05 example.com live \"updb -y\""
-    print_error "Example: $0 05 example.com staging \"status\""
-    print_error "Example: $0 05 example.com live \"cr\""
+if [ "$#" -lt 3 ]; then
+    print_error "Usage: $0 [domain] [environment] [drush_command]"
+    print_error "Example: $0 example.com live \"updb -y\""
+    print_error "Example: $0 example.com staging \"status\""
+    print_error "Example: $0 example.com live \"cr\""
     exit 1
 fi
 
-CATEGORY=$1
-DOMAIN=$2
-ENVIRONMENT=$3
-shift 3
+DOMAIN=$1
+ENVIRONMENT=$2
+shift 2
 DRUSH_COMMAND="$@"
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/"
+    exit 1
+fi
 
 BASE_PATH="/var/www/${CATEGORY}/${DOMAIN}"
 ENV_PATH="${BASE_PATH}/deployment_environments/${ENVIRONMENT}"

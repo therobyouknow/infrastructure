@@ -1,7 +1,7 @@
 #!/bin/bash
 # Create New Release Script
-# Usage: ./create_release.sh [category] [domain] [release_version] [git_repo_url]
-# Example: ./create_release.sh 05 example.com 2.0.5 https://github.com/user/repo.git
+# Usage: ./create_release.sh [domain] [release_version] [git_repo_url]
+# Example: ./create_release.sh example.com 2.0.5 https://github.com/user/repo.git
 
 set -e
 
@@ -24,17 +24,24 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -lt 3 ]; then
-    print_error "Usage: $0 [category] [domain] [release_version] [git_repo_url]"
-    print_error "Example: $0 05 example.com 2.0.5 https://github.com/user/repo.git"
+if [ "$#" -lt 2 ]; then
+    print_error "Usage: $0 [domain] [release_version] [git_repo_url]"
+    print_error "Example: $0 example.com 2.0.5 https://github.com/user/repo.git"
     print_error "Git repo URL is optional if you want to clone code"
     exit 1
 fi
 
-CATEGORY=$1
-DOMAIN=$2
-RELEASE=$3
-GIT_REPO=$4
+DOMAIN=$1
+RELEASE=$2
+GIT_REPO=$3
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/"
+    exit 1
+fi
 
 BASE_PATH="/var/www/${CATEGORY}/${DOMAIN}"
 RELEASES_PATH="${BASE_PATH}/releases"
@@ -137,4 +144,4 @@ print_status "Next steps:"
 print_status "1. If needed, update the database number symlink in web/sites/default/settings.local.php"
 print_status "2. Set up the files symlink: cd ${CODE_PATH}/web/sites/default && ln -sf ../../../../../../deployment_environments/live/assets/public/files files"
 print_status "3. Run composer install: cd ${CODE_PATH} && ./composer install"
-print_status "4. Deploy to environment: ./deploy.sh ${CATEGORY} ${DOMAIN} [live|staging] ${RELEASE}"
+print_status "4. Deploy to environment: ./deploy.sh ${DOMAIN} [live|staging] ${RELEASE}"

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Database Restore Script
-# Usage: ./restore_db.sh [category] [domain] [db_number] [backup_file]
-# Example: ./restore_db.sh 05 example.com 1 /var/www/05/example.com/backups/database/dmysite_20240101_120000.sql.gz
+# Usage: ./restore_db.sh [domain] [db_number] [backup_file]
+# Example: ./restore_db.sh example.com 1 /var/www/05/example.com/backups/database/dmysite_20240101_120000.sql.gz
 
 set -e
 
@@ -24,17 +24,24 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -lt 3 ]; then
-    print_error "Usage: $0 [category] [domain] [db_number] [backup_file]"
-    print_error "Example: $0 05 example.com 1 /path/to/backup.sql.gz"
+if [ "$#" -lt 2 ]; then
+    print_error "Usage: $0 [domain] [db_number] [backup_file]"
+    print_error "Example: $0 example.com 1 /path/to/backup.sql.gz"
     print_error "If backup_file is not provided, you'll be shown a list to choose from"
     exit 1
 fi
 
-CATEGORY=$1
-DOMAIN=$2
-DB_NUMBER=$3
-BACKUP_FILE=$4
+DOMAIN=$1
+DB_NUMBER=$2
+BACKUP_FILE=$3
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/"
+    exit 1
+fi
 
 BASE_PATH="/var/www/${CATEGORY}/${DOMAIN}"
 SETTINGS_FILE="${BASE_PATH}/settings/${DB_NUMBER}/settings.local.php"

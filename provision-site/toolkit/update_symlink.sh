@@ -1,7 +1,7 @@
 #!/bin/bash
 # Update Symlink Script - Quick deployment without running updates
-# Usage: ./update_symlink.sh [category] [domain] [environment] [release_version]
-# Example: ./update_symlink.sh 05 example.com live 2.0.5
+# Usage: ./update_symlink.sh [domain] [environment] [release_version]
+# Example: ./update_symlink.sh example.com live 2.0.5
 
 set -e
 
@@ -24,16 +24,23 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 4 ]; then
-    print_error "Usage: $0 [category] [domain] [environment] [release_version]"
-    print_error "Example: $0 05 example.com live 2.0.5"
+if [ "$#" -ne 3 ]; then
+    print_error "Usage: $0 [domain] [environment] [release_version]"
+    print_error "Example: $0 example.com live 2.0.5"
     exit 1
 fi
 
-CATEGORY=$1
-DOMAIN=$2
-ENVIRONMENT=$3
-RELEASE=$4
+DOMAIN=$1
+ENVIRONMENT=$2
+RELEASE=$3
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/"
+    exit 1
+fi
 
 BASE_PATH="/var/www/${CATEGORY}/${DOMAIN}"
 RELEASE_PATH="${BASE_PATH}/releases/${RELEASE}"

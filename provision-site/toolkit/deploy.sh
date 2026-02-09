@@ -1,7 +1,7 @@
 #!/bin/bash
 # Drupal Site Deployment Script
-# Usage: ./deploy.sh [category] [domain] [environment] [release_version]
-# Example: ./deploy.sh 05 example.com live 2.0.5
+# Usage: ./deploy.sh [domain] [environment] [release_version]
+# Example: ./deploy.sh example.com live 2.0.5
 
 set -e  # Exit on error
 
@@ -25,16 +25,23 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 4 ]; then
-    print_error "Usage: $0 [category] [domain] [environment] [release_version]"
-    print_error "Example: $0 05 example.com live 2.0.5"
+if [ "$#" -ne 3 ]; then
+    print_error "Usage: $0 [domain] [environment] [release_version]"
+    print_error "Example: $0 example.com live 2.0.5"
     exit 1
 fi
 
-CATEGORY=$1
-DOMAIN=$2
-ENVIRONMENT=$3  # live or staging
-RELEASE=$4
+DOMAIN=$1
+ENVIRONMENT=$2  # live or staging
+RELEASE=$3
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/"
+    exit 1
+fi
 
 BASE_PATH="/var/www/${CATEGORY}/${DOMAIN}"
 RELEASE_PATH="${BASE_PATH}/releases/${RELEASE}"
@@ -64,7 +71,7 @@ print_status "Starting deployment for ${DOMAIN} (${ENVIRONMENT}) - Release ${REL
 # Backup current database before deployment
 print_status "Backing up database..."
 DB_NUMBER=$(readlink "${CODE_PATH}/web/sites/default/settings.local.php" | grep -oP 'settings/\K[0-9]+')
-./backup_db.sh ${CATEGORY} ${DOMAIN} ${DB_NUMBER}
+./backup_db.sh ${DOMAIN} ${DB_NUMBER}
 
 # Navigate to code directory
 cd "${CODE_PATH}"

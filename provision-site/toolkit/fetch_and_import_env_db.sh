@@ -2,8 +2,8 @@
 # Fetch Database Dump by Environment and Import into ddev (runs locally)
 # SSHes into a remote server, resolves the database from an environment's symlink chain,
 # dumps the database, downloads the file via SCP, and imports it into the local ddev environment.
-# Usage: ./fetch_and_import_env_db.sh [ssh_host] [category] [domain] [environment]
-# Example: ./fetch_and_import_env_db.sh server03 05 example.com live
+# Usage: ./fetch_and_import_env_db.sh [ssh_host] [domain] [environment]
+# Example: ./fetch_and_import_env_db.sh server03 example.com live
 
 set -e
 
@@ -26,20 +26,29 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 4 ]; then
-    print_error "Usage: $0 [ssh_host] [category] [domain] [environment]"
-    print_error "Example: $0 server03 05 example.com live"
+if [ "$#" -ne 3 ]; then
+    print_error "Usage: $0 [ssh_host] [domain] [environment]"
+    print_error "Example: $0 server03 example.com live"
     exit 1
 fi
 
 SSH_HOST=$1
-CATEGORY=$2
-DOMAIN=$3
-ENVIRONMENT=$4
+DOMAIN=$2
+ENVIRONMENT=$3
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 print_status "Connecting to ${SSH_HOST}..."
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(ssh "${SSH_HOST}" "basename \$(dirname \$(find /var/www -maxdepth 2 -mindepth 2 -type d -name '${DOMAIN}' | head -1)) 2>/dev/null")
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/ on ${SSH_HOST}"
+    exit 1
+fi
+
+print_status "Found ${DOMAIN} in category: ${CATEGORY}"
 
 # Resolve the settings.local.php path by following the symlink chain on the server
 SETTINGS_FILE=$(ssh "${SSH_HOST}" "readlink -f '/var/www/${CATEGORY}/${DOMAIN}/deployment_environments/${ENVIRONMENT}/docroot/sites/default/settings.local.php'")

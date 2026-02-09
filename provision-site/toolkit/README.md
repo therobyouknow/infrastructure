@@ -360,20 +360,21 @@ Fetches a database dump from a remote server by environment name. Like `fetch_db
 - Prints the resolved settings path and the local file path
 
 ### 15. fetch_and_import_env_db.sh *(local-dev)*
-Fetches a database dump from a remote server by environment name and imports it into the local ddev environment. Combines `fetch_env_db_dump.sh` with `ddev import-db` so you can refresh your local database in one command.
+Fetches a database dump from a remote server by environment name and imports it into the local ddev environment. Combines `fetch_env_db_dump.sh` with `ddev import-db` so you can refresh your local database in one command. No need to remember the category — the script finds it automatically.
 
 **Usage:**
 ```bash
-./fetch_and_import_env_db.sh [ssh_host] [category] [domain] [environment]
+./fetch_and_import_env_db.sh [ssh_host] [domain] [environment]
 ```
 
 **Example:**
 ```bash
-./fetch_and_import_env_db.sh server03 05 example.com live
+./fetch_and_import_env_db.sh server03 example.com live
 ```
 
 **What it does:**
 - SSHes into the server using the host alias from `~/.ssh/config`
+- Searches `/var/www/` to find the domain and automatically resolves the category
 - Resolves `deployment_environments/[env]/docroot/sites/default/settings.local.php` via `readlink -f` to find the actual settings file
 - Reads credentials from the resolved settings.local.php on the remote
 - Runs `mysqldump | gzip` on the remote, writing to `/tmp`

@@ -113,13 +113,13 @@ Creates Apache virtual host configuration files.
 
 **Usage:**
 ```bash
-./create_vhost.sh [category] [domain] [environment]
+./create_vhost.sh [domain] [environment]
 ```
 
 **Examples:**
 ```bash
-./create_vhost.sh 05 example.com live
-./create_vhost.sh 05 example.com staging
+./create_vhost.sh example.com live
+./create_vhost.sh example.com staging
 ```
 
 **What it does:**
@@ -133,13 +133,13 @@ Creates a new release directory and optionally clones code from git.
 
 **Usage:**
 ```bash
-./create_release.sh [category] [domain] [release_version] [git_repo_url]
+./create_release.sh [domain] [release_version] [git_repo_url]
 ```
 
 **Examples:**
 ```bash
-./create_release.sh 05 example.com 2.0.5 https://github.com/user/repo.git
-./create_release.sh 05 example.com 2.0.6
+./create_release.sh example.com 2.0.5 https://github.com/user/repo.git
+./create_release.sh example.com 2.0.6
 ```
 
 **What it does:**
@@ -154,13 +154,13 @@ Full deployment script that backs up database, updates symlink, and runs Drush u
 
 **Usage:**
 ```bash
-./deploy.sh [category] [domain] [environment] [release_version]
+./deploy.sh [domain] [environment] [release_version]
 ```
 
 **Examples:**
 ```bash
-./deploy.sh 05 example.com live 2.0.5
-./deploy.sh 05 example.com staging 2.0.6
+./deploy.sh example.com live 2.0.5
+./deploy.sh example.com staging 2.0.6
 ```
 
 **What it does:**
@@ -175,12 +175,12 @@ Quick symlink update without running database updates or cache rebuilds.
 
 **Usage:**
 ```bash
-./update_symlink.sh [category] [domain] [environment] [release_version]
+./update_symlink.sh [domain] [environment] [release_version]
 ```
 
 **Example:**
 ```bash
-./update_symlink.sh 05 example.com live 2.0.5
+./update_symlink.sh example.com live 2.0.5
 ```
 
 **What it does:**
@@ -193,12 +193,12 @@ Backs up a database to a compressed SQL file.
 
 **Usage:**
 ```bash
-./backup_db.sh [category] [domain] [db_number]
+./backup_db.sh [domain] [db_number]
 ```
 
 **Example:**
 ```bash
-./backup_db.sh 05 example.com 1
+./backup_db.sh example.com 1
 ```
 
 **What it does:**
@@ -213,13 +213,13 @@ Restores a database from a backup file.
 
 **Usage:**
 ```bash
-./restore_db.sh [category] [domain] [db_number] [backup_file]
+./restore_db.sh [domain] [db_number] [backup_file]
 ```
 
 **Examples:**
 ```bash
-./restore_db.sh 05 example.com 1
-./restore_db.sh 05 example.com 1 /var/www/05/example.com/backups/database/dmysite_20240101_120000.sql.gz
+./restore_db.sh example.com 1
+./restore_db.sh example.com 1 /var/www/05/example.com/backups/database/dmysite_20240101_120000.sql.gz
 ```
 
 **What it does:**
@@ -308,15 +308,15 @@ Helper script to run Drush commands on any site/environment.
 
 **Usage:**
 ```bash
-./drush_run.sh [category] [domain] [environment] [drush_command]
+./drush_run.sh [domain] [environment] [drush_command]
 ```
 
 **Examples:**
 ```bash
-./drush_run.sh 05 example.com live "status"
-./drush_run.sh 05 example.com live "updb -y"
-./drush_run.sh 05 example.com staging "cr"
-./drush_run.sh 05 example.com live "config:export -y"
+./drush_run.sh example.com live "status"
+./drush_run.sh example.com live "updb -y"
+./drush_run.sh example.com staging "cr"
+./drush_run.sh example.com live "config:export -y"
 ```
 
 **What it does:**
@@ -402,8 +402,8 @@ Here's the typical workflow for setting up a new Drupal site:
 # /var/www/05/example.com/settings/1/settings.local.php
 
 # 4. Create vhost configurations
-./create_vhost.sh 05 example.com live
-./create_vhost.sh 05 example.com staging
+./create_vhost.sh example.com live
+./create_vhost.sh example.com staging
 
 # 5. Set up DNS for the domains
 # Configure example.com and staging.example.com to point to your server
@@ -413,7 +413,7 @@ sudo certbot --apache -d example.com
 sudo certbot --apache -d staging.example.com
 
 # 7. Create first release
-./create_release.sh 05 example.com 1.0.0 https://github.com/user/repo.git
+./create_release.sh example.com 1.0.0 https://github.com/user/repo.git
 
 # 8. Set up files symlink
 cd /var/www/05/example.com/releases/1.0.0/code/web/sites/default
@@ -425,36 +425,36 @@ cd /var/www/05/example.com/releases/1.0.0/code
 
 # 10. Import database or install Drupal
 # Option A: Import existing database
-./restore_db.sh 05 example.com 1 /path/to/backup.sql.gz
+./restore_db.sh example.com 1 /path/to/backup.sql.gz
 
 # Option B: Install fresh Drupal
-./drush_run.sh 05 example.com live "site:install standard --account-name=admin --account-pass=admin"
+./drush_run.sh example.com live "site:install standard --account-name=admin --account-pass=admin"
 
 # 11. Deploy to live
-./deploy.sh 05 example.com live 1.0.0
+./deploy.sh example.com live 1.0.0
 ```
 
 ## Workflow: Deploying a New Release
 
 ```bash
 # 1. Create new release
-./create_release.sh 05 example.com 2.0.5 https://github.com/user/repo.git
+./create_release.sh example.com 2.0.5 https://github.com/user/repo.git
 
 # 2. Set up files symlink for staging
 cd /var/www/05/example.com/releases/2.0.5/code/web/sites/default
 ln -sf ../../../../../../deployment_environments/staging/assets/public/files files
 
 # 3. Deploy to staging for testing
-./deploy.sh 05 example.com staging 2.0.5
+./deploy.sh example.com staging 2.0.5
 
 # 4. Test the staging site
 # Visit staging.example.com and verify everything works
 
 # 5. If all good, point live to the same release
-./deploy.sh 05 example.com live 2.0.5
+./deploy.sh example.com live 2.0.5
 
 # Alternative: Just update symlink without running updates
-./update_symlink.sh 05 example.com live 2.0.5
+./update_symlink.sh example.com live 2.0.5
 ```
 
 ## Workflow: Updating Code in Existing Release
@@ -474,8 +474,8 @@ git pull
 ./drush cr
 
 # Or use the drush_run helper:
-./drush_run.sh 05 example.com live "updb -y"
-./drush_run.sh 05 example.com live "cr"
+./drush_run.sh example.com live "updb -y"
+./drush_run.sh example.com live "cr"
 ```
 
 ## Workflow: Fetching a Remote Database Locally
@@ -486,7 +486,7 @@ git pull
 # Outputs: <git-root>/databases/dexample_com_1_20260206_143000.sql.gz
 
 # 2. Restore it into a local or staging environment
-./restore_db.sh 05 example.com 1 databases/dexample_com_1_20260206_143000.sql.gz
+./restore_db.sh example.com 1 databases/dexample_com_1_20260206_143000.sql.gz
 ```
 
 ## Workflow: Syncing Site Files for Local Dev
@@ -500,7 +500,7 @@ git pull
 # Downloads to <git-root>/web/sites/default/files/
 
 # 3. Restore the database locally
-./restore_db.sh 05 example.com 1 dexample_com_1_20260206_143000.sql.gz
+./restore_db.sh example.com 1 dexample_com_1_20260206_143000.sql.gz
 
 # 4. You now have a full local copy (database + files) for development
 
@@ -572,4 +572,4 @@ For issues or questions, check:
 1. Script output messages (colored for clarity)
 2. Apache error logs: `/var/log/apache2/error.log`
 3. Apache access logs: `/var/log/apache2/access.log`
-4. Drupal logs via Drush: `./drush_run.sh 05 example.com live "watchdog:show"`
+4. Drupal logs via Drush: `./drush_run.sh example.com live "watchdog:show"`

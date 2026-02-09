@@ -58,7 +58,7 @@ Each site follows this structure:
 ## Scripts Overview
 
 **Server scripts** (1–8, 11–13) run on the server and can be installed system-wide with `install.sh`.
-**Local-dev scripts** (9–10, 14) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
+**Local-dev scripts** (9–10, 14–15) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
 
 ### 1. create_site_structure.sh
 Creates the complete directory structure for a new site.
@@ -358,6 +358,30 @@ Fetches a database dump from a remote server by environment name. Like `fetch_db
 - Resolves the local path from the git root, so it works regardless of where you run the script from
 - Removes the temp file from the server
 - Prints the resolved settings path and the local file path
+
+### 15. fetch_and_import_env_db.sh *(local-dev)*
+Fetches a database dump from a remote server by environment name and imports it into the local ddev environment. Combines `fetch_env_db_dump.sh` with `ddev import-db` so you can refresh your local database in one command.
+
+**Usage:**
+```bash
+./fetch_and_import_env_db.sh [ssh_host] [category] [domain] [environment]
+```
+
+**Example:**
+```bash
+./fetch_and_import_env_db.sh server03 05 example.com live
+```
+
+**What it does:**
+- SSHes into the server using the host alias from `~/.ssh/config`
+- Resolves `deployment_environments/[env]/docroot/sites/default/settings.local.php` via `readlink -f` to find the actual settings file
+- Reads credentials from the resolved settings.local.php on the remote
+- Runs `mysqldump | gzip` on the remote, writing to `/tmp`
+- Downloads the dump file to `<git-root>/databases/` via SCP (creates the directory if needed)
+- Resolves the local path from the git root, so it works regardless of where you run the script from
+- Removes the temp file from the server
+- Drops the local ddev database and imports the downloaded dump (ddev handles `.gz` natively)
+- Prints the local file path
 
 ## Complete Workflow: Setting Up a New Site
 

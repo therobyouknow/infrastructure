@@ -2151,4 +2151,55 @@ In /var/www/99/website-domain-name.com/settings I have 2 folders named 1 and 2. 
 ⏺ Pushed to origin/main.
                                                                                                                                         
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯   
+
+Session 3: fetch_and_import_env_db.sh + category auto-resolve
+=============================================================
+
+❯ Implement the following plan:
+  # Plan: fetch_and_import_env_db.sh
+  Create fetch_and_import_env_db.sh — based on fetch_env_db_dump.sh, with ddev import steps appended.
+  Usage: ./fetch_and_import_env_db.sh [ssh_host] [category] [domain] [environment]
+
+⏺ Created provision-site/toolkit/fetch_and_import_env_db.sh
+  - Identical fetch logic to fetch_env_db_dump.sh
+  - After download: cd to git root, ddev sql-drop -y, ddev import-db --file=..., success message
+  - Updated README.md with script #15 (local-dev)
+  - Updated MEMORY.md with script #15
+
+⏺ Bash(git add ... && git commit && git push)
+  ⎿  [main c5240de] Add fetch_and_import_env_db.sh to fetch DB dumps by environment and import into ddev
+
+❯ ddev sql-drop -y should be: ddev drush sql-drop -y
+
+⏺ Update(provision-site/toolkit/fetch_and_import_env_db.sh)
+  ⎿  Changed ddev sql-drop -y to ddev drush sql-drop -y
+
+⏺ Bash(git add ... && git commit && git push)
+  ⎿  [main 71a58bb] Fix sql-drop command to use ddev drush sql-drop
+
+❯ further enhancement. Can the category input parameter/argument be removed.
+  This would mean you would have to search /var/www/ for the domain to derive the category yourself.
+
+⏺ Update(provision-site/toolkit/fetch_and_import_env_db.sh)
+  - Changed from 4 args to 3: [ssh_host] [domain] [environment]
+  - Added SSH find command to auto-resolve category:
+    CATEGORY=$(ssh "${SSH_HOST}" "basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name '${DOMAIN}' | head -1)) 2>/dev/null")
+  - Updated README.md for script #15
+
+⏺ Bash(git add ... && git commit && git push)
+  ⎿  [main 16690ef] Remove category parameter from fetch_and_import_env_db.sh, auto-resolve from server
+
+❯ it works thank you Claude!
+
+❯ now do the same category auto-resolve for fetch_env_db_dump.sh
+
+⏺ Update(provision-site/toolkit/fetch_env_db_dump.sh)
+  - Changed from 4 args to 3: [ssh_host] [domain] [environment]
+  - Added same SSH find command to auto-resolve category
+  - Updated README.md for script #14
+  - Updated MEMORY.md
+
+⏺ Bash(git add ... && git commit && git push)
+  ⎿  [main b9f1707] Remove category parameter from fetch_env_db_dump.sh, auto-resolve from server
+
+❯ it works thank you Claude!

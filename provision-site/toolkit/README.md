@@ -233,12 +233,12 @@ Fetches a database dump from a remote server to your local machine. Runs locally
 
 **Usage:**
 ```bash
-./fetch_db_dump.sh [ssh_host] [category] [domain] [db_number]
+./fetch_db_dump.sh [ssh_host] [domain] [db_number]
 ```
 
 **Example:**
 ```bash
-./fetch_db_dump.sh server03 05 example.com 1
+./fetch_db_dump.sh server03 example.com 1
 ```
 
 **What it does:**
@@ -255,16 +255,16 @@ Syncs the Drupal public files directory between your local dev environment and a
 
 **Usage:**
 ```bash
-./sync_files.sh [push|pull] [ssh_host] [category] [domain] [environment]
+./sync_files.sh [push|pull] [ssh_host] [domain] [environment]
 ```
 
 **Examples:**
 ```bash
 # Pull files from server to local
-./sync_files.sh pull server03 05 example.com live
+./sync_files.sh pull server03 example.com live
 
 # Push files from local to server
-./sync_files.sh push server03 05 example.com live
+./sync_files.sh push server03 example.com live
 ```
 
 **What it does:**
@@ -482,7 +482,7 @@ git pull
 
 ```bash
 # 1. Download the live database from the server
-./fetch_db_dump.sh server03 05 example.com 1
+./fetch_db_dump.sh server03 example.com 1
 # Outputs: <git-root>/databases/dexample_com_1_20260206_143000.sql.gz
 
 # 2. Restore it into a local or staging environment
@@ -493,10 +493,10 @@ git pull
 
 ```bash
 # 1. Pull the live database
-./fetch_db_dump.sh server03 05 example.com 1
+./fetch_db_dump.sh server03 example.com 1
 
 # 2. Pull the live files directory
-./sync_files.sh pull server03 05 example.com live
+./sync_files.sh pull server03 example.com live
 # Downloads to <git-root>/web/sites/default/files/
 
 # 3. Restore the database locally
@@ -505,7 +505,7 @@ git pull
 # 4. You now have a full local copy (database + files) for development
 
 # 5. When ready, push updated files back to the server
-./sync_files.sh push server03 05 example.com live
+./sync_files.sh push server03 example.com live
 ```
 
 ## Tips and Best Practices

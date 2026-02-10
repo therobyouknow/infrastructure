@@ -1,8 +1,8 @@
 #!/bin/bash
 # Fetch Database Dump Script (runs locally)
 # SSHes into a remote server, dumps a database, and downloads the file via SCP.
-# Usage: ./fetch_db_dump.sh [ssh_host] [category] [domain] [db_number]
-# Example: ./fetch_db_dump.sh server03 05 example.com 1
+# Usage: ./fetch_db_dump.sh [ssh_host] [domain] [db_number]
+# Example: ./fetch_db_dump.sh server03 example.com 1
 
 set -e
 
@@ -25,16 +25,23 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 4 ]; then
-    print_error "Usage: $0 [ssh_host] [category] [domain] [db_number]"
-    print_error "Example: $0 server03 05 example.com 1"
+if [ "$#" -ne 3 ]; then
+    print_error "Usage: $0 [ssh_host] [domain] [db_number]"
+    print_error "Example: $0 server03 example.com 1"
     exit 1
 fi
 
 SSH_HOST=$1
-CATEGORY=$2
-DOMAIN=$3
-DB_NUMBER=$4
+DOMAIN=$2
+DB_NUMBER=$3
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(ssh "${SSH_HOST}" "basename \$(dirname \$(find /var/www -maxdepth 2 -mindepth 2 -type d -name '${DOMAIN}' | head -1)) 2>/dev/null")
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/ on ${SSH_HOST}"
+    exit 1
+fi
 
 SETTINGS_FILE="/var/www/${CATEGORY}/${DOMAIN}/settings/${DB_NUMBER}/settings.local.php"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")

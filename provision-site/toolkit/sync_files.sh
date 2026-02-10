@@ -1,8 +1,8 @@
 #!/bin/bash
 # Sync Site Files Script (runs locally)
 # Syncs the Drupal public files directory between local dev and a remote server.
-# Usage: ./sync_files.sh [push|pull] [ssh_host] [category] [domain] [environment]
-# Example: ./sync_files.sh pull server03 05 example.com live
+# Usage: ./sync_files.sh [push|pull] [ssh_host] [domain] [environment]
+# Example: ./sync_files.sh pull server03 example.com live
 
 set -e
 
@@ -25,22 +25,29 @@ print_warning() {
 }
 
 # Validate arguments
-if [ "$#" -ne 5 ]; then
-    print_error "Usage: $0 [push|pull] [ssh_host] [category] [domain] [environment]"
-    print_error "Example: $0 pull server03 05 example.com live"
+if [ "$#" -ne 4 ]; then
+    print_error "Usage: $0 [push|pull] [ssh_host] [domain] [environment]"
+    print_error "Example: $0 pull server03 example.com live"
     exit 1
 fi
 
 DIRECTION=$1
 SSH_HOST=$2
-CATEGORY=$3
-DOMAIN=$4
-ENVIRONMENT=$5
+DOMAIN=$3
+ENVIRONMENT=$4
 
 # Validate direction
 if [ "${DIRECTION}" != "push" ] && [ "${DIRECTION}" != "pull" ]; then
     print_error "Direction must be 'push' or 'pull' (got '${DIRECTION}')"
-    print_error "Usage: $0 [push|pull] [ssh_host] [category] [domain] [environment]"
+    print_error "Usage: $0 [push|pull] [ssh_host] [domain] [environment]"
+    exit 1
+fi
+
+# Find the category by searching /var/www/ for the domain directory
+CATEGORY=$(ssh "${SSH_HOST}" "basename \$(dirname \$(find /var/www -maxdepth 2 -mindepth 2 -type d -name '${DOMAIN}' | head -1)) 2>/dev/null")
+
+if [ -z "${CATEGORY}" ]; then
+    print_error "Could not find domain '${DOMAIN}' under /var/www/ on ${SSH_HOST}"
     exit 1
 fi
 

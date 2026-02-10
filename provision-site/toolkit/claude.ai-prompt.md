@@ -2203,3 +2203,40 @@ Session 3: fetch_and_import_env_db.sh + category auto-resolve
   ⎿  [main b9f1707] Remove category parameter from fetch_env_db_dump.sh, auto-resolve from server
 
 ❯ it works thank you Claude!
+
+Session 4: Category auto-resolve for all remaining scripts
+==========================================================
+
+❯ I think backup_db.sh, create_release.sh, deploy.sh can also have the category automatically determined.
+  They all operate on a created site folder structure. What do you think?
+
+⏺ Assessment: 7 server scripts could auto-resolve (backup_db.sh, restore_db.sh, create_release.sh, deploy.sh,
+  update_symlink.sh, create_vhost.sh, drush_run.sh). Only create_site_structure.sh must keep category.
+
+❯ do all 7 please, I'm feeling bold.
+
+⏺ Updated all 7 server scripts:
+  - Removed category parameter from each
+  - Added local find command (no SSH needed since they run on the server):
+    CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
+  - Also updated deploy.sh's internal call: ./backup_db.sh ${DOMAIN} ${DB_NUMBER}
+  - Also updated create_release.sh's "Next steps" output
+
+⏺ Bash(git add ... && git commit)
+  ⎿  [main 00356f9] refactored scripts to work out category, done by claude
+
+⏺ Updated README.md — all usage examples, workflow sections, and troubleshooting references
+
+⏺ Bash(git add ... && git commit && git push)
+  ⎿  [main 8882be2] Update README to remove category parameter from 7 scripts
+
+❯ In sync_files.sh I still see category as parameter/argument.
+
+⏺ Good catch — also found fetch_db_dump.sh still had category.
+  Updated both (local-dev scripts, so they use SSH find like #14 and #15).
+  Updated README examples and workflow sections.
+
+⏺ Bash(git add ... && git commit && git push)
+  ⎿  [main f4a1e9d] Remove category parameter from fetch_db_dump.sh and sync_files.sh, auto-resolve from server
+
+⏺ Total: 11 of 15 scripts now auto-resolve category. Only create_site_structure.sh (#1) requires it.

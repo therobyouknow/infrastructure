@@ -3,6 +3,8 @@
 **/.AppleDouble
 **/.LSOverride
 
+databases/*sql*
+
 # Icon must end with two \r
 **/Icon
 

@@ -61,9 +61,9 @@ fi
 print_status "Resolved settings: ${SETTINGS_FILE}"
 
 # Extract database credentials from settings file on the remote server
-DB_NAME=$(ssh "${SSH_HOST}" "grep \"'database'\" '${SETTINGS_FILE}' | sed \"s/.*'database' => '\\([^']*\\)'.*/\\1/\"")
-DB_USER=$(ssh "${SSH_HOST}" "grep \"'username'\" '${SETTINGS_FILE}' | sed \"s/.*'username' => '\\([^']*\\)'.*/\\1/\"")
-DB_PASS=$(ssh "${SSH_HOST}" "grep \"'password'\" '${SETTINGS_FILE}' | sed \"s/.*'password' => '\\([^']*\\)'.*/\\1/\"")
+DB_NAME=$(ssh "${SSH_HOST}" "grep \"'database'\" '${SETTINGS_FILE}' | head -1 | sed \"s/.*'database' => '\\([^']*\\)'.*/\\1/\"")
+DB_USER=$(ssh "${SSH_HOST}" "grep \"'username'\" '${SETTINGS_FILE}' | head -1 | sed \"s/.*'username' => '\\([^']*\\)'.*/\\1/\"")
+DB_PASS=$(ssh "${SSH_HOST}" "grep \"'password'\" '${SETTINGS_FILE}' | head -1 | sed \"s/.*'password' => '\\([^']*\\)'.*/\\1/\"")
 
 if [ -z "${DB_NAME}" ] || [ -z "${DB_USER}" ] || [ -z "${DB_PASS}" ]; then
     print_error "Could not extract database credentials from ${SETTINGS_FILE}"
@@ -109,12 +109,7 @@ FILE_SIZE_MB=$(echo "scale=2; ${FILE_SIZE}/1048576" | bc)
 
 print_status "Download complete! (${FILE_SIZE_MB} MB)"
 
-# Import into local ddev environment
-cd "${GIT_ROOT}"
-
-print_status "Dropping local database..."
-ddev drush sql-drop -y
-
+# Import into local ddev environment (runs from the user's current directory)
 print_status "Importing database into ddev..."
 ddev import-db --file="${LOCAL_FILE}"
 

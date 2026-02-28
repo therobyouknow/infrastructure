@@ -61,9 +61,9 @@ fi
 print_status "Resolved settings: ${SETTINGS_FILE}"
 
 # Extract database credentials from settings file on the remote server
-DB_NAME=$(ssh "${SSH_HOST}" "grep \"'database'\" '${SETTINGS_FILE}' | sed \"s/.*'database' => '\\([^']*\\)'.*/\\1/\"")
-DB_USER=$(ssh "${SSH_HOST}" "grep \"'username'\" '${SETTINGS_FILE}' | sed \"s/.*'username' => '\\([^']*\\)'.*/\\1/\"")
-DB_PASS=$(ssh "${SSH_HOST}" "grep \"'password'\" '${SETTINGS_FILE}' | sed \"s/.*'password' => '\\([^']*\\)'.*/\\1/\"")
+DB_NAME=$(ssh "${SSH_HOST}" "grep \"'database'\" '${SETTINGS_FILE}' | head -1 | sed \"s/.*'database' => '\\([^']*\\)'.*/\\1/\"")
+DB_USER=$(ssh "${SSH_HOST}" "grep \"'username'\" '${SETTINGS_FILE}' | head -1 | sed \"s/.*'username' => '\\([^']*\\)'.*/\\1/\"")
+DB_PASS=$(ssh "${SSH_HOST}" "grep \"'password'\" '${SETTINGS_FILE}' | head -1 | sed \"s/.*'password' => '\\([^']*\\)'.*/\\1/\"")
 
 if [ -z "${DB_NAME}" ] || [ -z "${DB_USER}" ] || [ -z "${DB_PASS}" ]; then
     print_error "Could not extract database credentials from ${SETTINGS_FILE}"

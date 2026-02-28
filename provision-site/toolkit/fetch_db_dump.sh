@@ -73,7 +73,11 @@ LOCAL_FILE="${LOCAL_DIR}/${DB_NAME}_${TIMESTAMP}.sql.gz"
 print_status "Dumping database: ${DB_NAME}"
 
 # Run mysqldump on the remote server
-ssh "${SSH_HOST}" "mysqldump -u'${DB_USER}' -p'${DB_PASS}' '${DB_NAME}' | gzip > '${REMOTE_DUMP}'"
+if ! ssh "${SSH_HOST}" "set -o pipefail; mysqldump -u'${DB_USER}' -p'${DB_PASS}' '${DB_NAME}' | gzip > '${REMOTE_DUMP}'"; then
+    print_error "mysqldump failed on remote server. Check database credentials and connectivity."
+    ssh "${SSH_HOST}" "rm -f '${REMOTE_DUMP}'" 2>/dev/null
+    exit 1
+fi
 
 # Download the dump file
 print_status "Downloading dump file..."
@@ -84,6 +88,11 @@ ssh "${SSH_HOST}" "rm -f '${REMOTE_DUMP}'"
 
 # Check file size
 FILE_SIZE=$(stat -f%z "${LOCAL_FILE}" 2>/dev/null || stat -c%s "${LOCAL_FILE}" 2>/dev/null)
+if [ "${FILE_SIZE}" -lt 100 ]; then
+    print_error "Downloaded dump file is too small (${FILE_SIZE} bytes) - mysqldump likely failed on the server."
+    rm -f "${LOCAL_FILE}"
+    exit 1
+fi
 FILE_SIZE_MB=$(echo "scale=2; ${FILE_SIZE}/1048576" | bc)
 
 print_status "Download complete! (${FILE_SIZE_MB} MB)"

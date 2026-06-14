@@ -12,13 +12,17 @@ The system contains legacy `evdi` (Extended Virtual Display Interface) source mo
 ## 3. Remediations & Resolution Playbooks
 
 ### Path A: Purge the Module (If DisplayLink Docks/USB hardware are NOT in use)
-`bash
+in `bash`
+
+`
 sudo apt purge evdi-dkms
 sudo apt install -f
 `
 
 ### Path B: Drop Build Target (If DisplayLink Docks/USB hardware ARE active)
-`bash
+in `bash`
+
+`
 sudo dkms remove evdi/1.14.11 --all
 sudo apt install -f
 `

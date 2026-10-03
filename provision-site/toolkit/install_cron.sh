@@ -24,7 +24,7 @@ if [ "$#" -lt 2 ]; then
 fi
 DOMAIN=$1
 ENVIRONMENT=$2
-ALERT_TO=${3:-}
+ALERT_TO=$(echo "${3:-}" | tr -d "[:space:]")   # "a@x, b@y" -> "a@x,b@y": a space would split the cron argument
 
 CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
 if [ -z "${CATEGORY}" ]; then

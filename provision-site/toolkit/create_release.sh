@@ -1,7 +1,8 @@
 #!/bin/bash
 # Create New Release Script
-# Usage: ./create_release.sh [domain] [release_version] [git_repo_url]
+# Usage: ./create_release.sh [domain] [release_version] [git_repo_url] [git_ref]
 # Example: ./create_release.sh example.com 2.0.5 https://github.com/user/repo.git
+# Example: ./create_release.sh example.com 2.0.6-staging https://github.com/user/repo.git feature/x
 
 set -e
 
@@ -25,15 +26,18 @@ print_warning() {
 
 # Validate arguments
 if [ "$#" -lt 2 ]; then
-    print_error "Usage: $0 [domain] [release_version] [git_repo_url]"
+    print_error "Usage: $0 [domain] [release_version] [git_repo_url] [git_ref]"
     print_error "Example: $0 example.com 2.0.5 https://github.com/user/repo.git"
+    print_error "Example: $0 example.com 2.0.6-staging https://github.com/user/repo.git feature/x"
     print_error "Git repo URL is optional if you want to clone code"
+    print_error "Git ref (branch or tag) is optional; without it the release version is tried as a tag, else the default branch is used"
     exit 1
 fi
 
 DOMAIN=$1
 RELEASE=$2
 GIT_REPO=$3
+GIT_REF=$4
 
 # Find the category by searching /var/www/ for the domain directory
 CATEGORY=$(basename $(dirname $(find /var/www -maxdepth 2 -mindepth 2 -type d -name "${DOMAIN}" | head -1)) 2>/dev/null)
@@ -72,27 +76,35 @@ if [ -n "${GIT_REPO}" ]; then
     print_status "Cloning repository from: ${GIT_REPO}"
     git clone "${GIT_REPO}" "${CODE_PATH}"
     
-    # Checkout specific tag if release looks like a tag
+    # Checkout the requested ref, else a tag matching the release, else stay on the default branch
     cd "${CODE_PATH}"
-    if git rev-parse "v${RELEASE}" >/dev/null 2>&1; then
+    if [ -n "${GIT_REF}" ]; then
+        print_status "Checking out ref: ${GIT_REF}"
+        git checkout "${GIT_REF}"
+    elif git rev-parse "v${RELEASE}" >/dev/null 2>&1; then
         print_status "Checking out tag: v${RELEASE}"
         git checkout "v${RELEASE}"
     elif git rev-parse "${RELEASE}" >/dev/null 2>&1; then
         print_status "Checking out tag: ${RELEASE}"
         git checkout "${RELEASE}"
     else
-        print_warning "Tag ${RELEASE} not found, staying on default branch"
+        print_warning "Tag ${RELEASE} not found, staying on default branch ($(git rev-parse --abbrev-ref HEAD))"
     fi
 else
     print_status "Creating empty code directory"
     mkdir -p "${CODE_PATH}"
 fi
 
-# Set up symlinks for Drush and Composer
+# Set up symlinks for Drush and Composer.
+# A repository may ship its own `drush` and `composer` symlinks (for example
+# drush -> vendor/bin/drush and composer -> tools/dev/phpcomposer/composer.phar).
+# Those are kept; the shared copies below are only linked when the repo has none.
 cd "${CODE_PATH}"
 
 print_status "Setting up Drush symlink..."
-if [ -f "vendor/drush/drush/drush" ]; then
+if [ -L "drush" ]; then
+    print_status "Repository ships its own drush symlink ($(readlink drush)); keeping it (resolves after composer install)"
+elif [ -f "vendor/drush/drush/drush" ]; then
     ln -sf vendor/drush/drush/drush drush
     print_status "Drush symlink created"
 else
@@ -102,13 +114,18 @@ fi
 
 print_status "Setting up Composer symlink..."
 COMPOSER_PATH="${BASE_PATH}/../../tools/dev/phpcomposer/composer.phar"
-if [ -f "${COMPOSER_PATH}" ]; then
-    # Calculate relative path to composer
-    RELATIVE_COMPOSER="../../../../../../tools/dev/phpcomposer/composer.phar"
-    ln -sf "${RELATIVE_COMPOSER}" composer
-    print_status "Composer symlink created"
+if [ -f "composer" ]; then
+    print_status "Repository ships its own composer ($(readlink composer 2>/dev/null || echo file)); keeping it"
+elif [ -f "${COMPOSER_PATH}" ]; then
+    # Relative path from the code directory to the shared composer.phar, so the
+    # link survives the site being moved. (A hard-coded ../../../../../../ was one
+    # level too deep and produced a dangling link.)
+    RELATIVE_COMPOSER=$(realpath --relative-to="${CODE_PATH}" "${COMPOSER_PATH}")
+    ln -sfn "${RELATIVE_COMPOSER}" composer
+    print_status "Composer symlink created: composer -> ${RELATIVE_COMPOSER}"
 else
-    print_warning "Composer not found at: ${COMPOSER_PATH}"
+    print_warning "Composer not found at: ${COMPOSER_PATH} and the repository does not ship one"
+    print_warning "deploy.sh will fall back to a composer found on PATH"
 fi
 
 # Set up settings.local.php symlink (database 2 by default, can be changed later)

@@ -76,10 +76,34 @@ DB_NUMBER=$(readlink "${CODE_PATH}/web/sites/default/settings.local.php" | grep 
 # Navigate to code directory
 cd "${CODE_PATH}"
 
-# Run composer install (if composer.json exists)
+# Run composer install (if composer.json exists). Everything up to the symlink
+# flip below leaves the live site untouched, so fail here rather than later.
 if [ -f "composer.json" ]; then
-    print_status "Running composer install..."
-    ./composer install --no-dev --optimize-autoloader
+    if [ -x "./composer" ]; then
+        COMPOSER_CMD="./composer"
+    elif command -v composer >/dev/null 2>&1; then
+        COMPOSER_CMD="composer"
+        print_warning "./composer is missing or dangling; using $(command -v composer) instead"
+    else
+        print_error "No usable composer: ./composer does not resolve and none is on PATH"
+        if [ -L "./composer" ]; then
+            print_error "./composer -> $(readlink ./composer) (dangling)"
+            print_error "If the repository ships its own composer symlink, restore it with: git checkout -- composer"
+        fi
+        exit 1
+    fi
+    print_status "Running composer install (${COMPOSER_CMD})..."
+    ${COMPOSER_CMD} install --no-dev --optimize-autoloader
+fi
+
+# Locate drush now that vendor/ exists, before anything the site can notice.
+if [ -x "./drush" ]; then
+    DRUSH_CMD="./drush"
+elif [ -x "vendor/bin/drush" ]; then
+    DRUSH_CMD="vendor/bin/drush"
+else
+    print_error "No usable drush: ./drush does not resolve and vendor/bin/drush is missing"
+    exit 1
 fi
 
 # Update the symlink to point to new release
@@ -89,12 +113,22 @@ ln -sfn ${RELATIVE_PATH} ${DOCROOT_LINK}
 
 print_status "Symlink updated: ${DOCROOT_LINK} -> ${RELATIVE_PATH}"
 
+# Reload PHP-FPM so OPcache drops the previous release's code. Without this the
+# old core/modules kept running after a deploy (seen on staging, Sep 2026).
+PHP_FPM_SERVICE=$(systemctl list-units --type=service --state=running --no-legend 'php*-fpm*' 2>/dev/null | awk '{print $1}' | head -1)
+if [ -n "${PHP_FPM_SERVICE}" ]; then
+    print_status "Reloading ${PHP_FPM_SERVICE} (clears OPcache)..."
+    sudo systemctl reload "${PHP_FPM_SERVICE}"
+else
+    print_warning "No running php-fpm service found; reload it by hand so OPcache does not serve old code"
+fi
+
 # Run Drush updates
-print_status "Running Drush database updates..."
-./drush updb -y
+print_status "Running Drush database updates (${DRUSH_CMD})..."
+${DRUSH_CMD} updb -y
 
 print_status "Clearing Drupal cache..."
-./drush cr
+${DRUSH_CMD} cr
 
 print_status "Deployment completed successfully!"
 print_status "Site is now running release ${RELEASE}"

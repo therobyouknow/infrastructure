@@ -133,18 +133,19 @@ Creates a new release directory and optionally clones code from git.
 
 **Usage:**
 ```bash
-./create_release.sh [domain] [release_version] [git_repo_url]
+./create_release.sh [domain] [release_version] [git_repo_url] [git_ref]
 ```
 
 **Examples:**
 ```bash
 ./create_release.sh example.com 2.0.5 https://github.com/user/repo.git
+./create_release.sh example.com 2.0.6-staging https://github.com/user/repo.git feature/x   # a branch for staging
 ./create_release.sh example.com 2.0.6
 ```
 
 **What it does:**
 - Creates release directory structure
-- Clones git repository (if provided)
+- Clones git repository (if provided) and checks out `git_ref` if given, else a tag named after the release, else the default branch. Note: without `git_ref` you get the tip of the default branch, so an unmerged branch is not deployed
 - Sets up Drush and Composer symlinks. If the repository ships its own `drush` or `composer` symlink (e.g. `drush -> vendor/bin/drush`, `composer -> tools/dev/phpcomposer/composer.phar`) it is kept; otherwise the shared `/var/www/tools/dev/phpcomposer/composer.phar` is linked with a path computed by `realpath`
 - Creates settings.local.php symlink (database 2 by default)
 - Sets proper permissions

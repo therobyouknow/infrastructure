@@ -88,11 +88,16 @@ else
     mkdir -p "${CODE_PATH}"
 fi
 
-# Set up symlinks for Drush and Composer
+# Set up symlinks for Drush and Composer.
+# A repository may ship its own `drush` and `composer` symlinks (for example
+# drush -> vendor/bin/drush and composer -> tools/dev/phpcomposer/composer.phar).
+# Those are kept; the shared copies below are only linked when the repo has none.
 cd "${CODE_PATH}"
 
 print_status "Setting up Drush symlink..."
-if [ -f "vendor/drush/drush/drush" ]; then
+if [ -L "drush" ]; then
+    print_status "Repository ships its own drush symlink ($(readlink drush)); keeping it (resolves after composer install)"
+elif [ -f "vendor/drush/drush/drush" ]; then
     ln -sf vendor/drush/drush/drush drush
     print_status "Drush symlink created"
 else
@@ -102,13 +107,18 @@ fi
 
 print_status "Setting up Composer symlink..."
 COMPOSER_PATH="${BASE_PATH}/../../tools/dev/phpcomposer/composer.phar"
-if [ -f "${COMPOSER_PATH}" ]; then
-    # Calculate relative path to composer
-    RELATIVE_COMPOSER="../../../../../../tools/dev/phpcomposer/composer.phar"
-    ln -sf "${RELATIVE_COMPOSER}" composer
-    print_status "Composer symlink created"
+if [ -f "composer" ]; then
+    print_status "Repository ships its own composer ($(readlink composer 2>/dev/null || echo file)); keeping it"
+elif [ -f "${COMPOSER_PATH}" ]; then
+    # Relative path from the code directory to the shared composer.phar, so the
+    # link survives the site being moved. (A hard-coded ../../../../../../ was one
+    # level too deep and produced a dangling link.)
+    RELATIVE_COMPOSER=$(realpath --relative-to="${CODE_PATH}" "${COMPOSER_PATH}")
+    ln -sfn "${RELATIVE_COMPOSER}" composer
+    print_status "Composer symlink created: composer -> ${RELATIVE_COMPOSER}"
 else
-    print_warning "Composer not found at: ${COMPOSER_PATH}"
+    print_warning "Composer not found at: ${COMPOSER_PATH} and the repository does not ship one"
+    print_warning "deploy.sh will fall back to a composer found on PATH"
 fi
 
 # Set up settings.local.php symlink (database 2 by default, can be changed later)

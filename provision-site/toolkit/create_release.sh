@@ -153,6 +153,11 @@ fi
 if [ -f "${CODE_PATH}/composer" ]; then
     chmod 750 "${CODE_PATH}/composer"
 fi
+# The blanket 640 above strips the executable bit from the repository's own
+# shell scripts (e.g. scripts/devops/post_deploy.sh); give it back.
+if [ -d "${CODE_PATH}/scripts" ]; then
+    find "${CODE_PATH}/scripts" -type f -name '*.sh' -exec chmod 750 {} \;
+fi
 
 print_status "Release ${RELEASE} created successfully!"
 print_status "Location: ${RELEASE_PATH}"

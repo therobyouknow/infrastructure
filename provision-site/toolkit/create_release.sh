@@ -75,6 +75,10 @@ print_status "Created release directory: ${RELEASE_PATH}"
 if [ -n "${GIT_REPO}" ]; then
     print_status "Cloning repository from: ${GIT_REPO}"
     git clone "${GIT_REPO}" "${CODE_PATH}"
+    # The permissions pass below sets every file to 640; without this, git in
+    # the release reports each executable file as modified and refuses to
+    # fast-forward a pull that touches one of them.
+    git -C "${CODE_PATH}" config core.fileMode false
     
     # Checkout the requested ref, else a tag matching the release, else stay on the default branch
     cd "${CODE_PATH}"

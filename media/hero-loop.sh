@@ -5,13 +5,15 @@
 #
 # What it makes, next to each other in the output folder:
 #   <name>.mp4        H.264 High, yuv420p, no audio, faststart, 25 fps,
-#                     scaled to the chosen width (default 1280 => 1280x720)
+#                     scaled to the chosen width (default 1280 => 1280x720),
+#                     optionally with a strip cropped off the top first (-C)
 #   <name>-poster.webp  one frame (default: the first frame of the clip),
-#                     same width, WebP quality 75
+#                     same crop, same width unless -W says otherwise, WebP quality 75
 #
 # Usage:
 #   ./hero-loop.sh -u 'https://youtu.be/XXXX' -s 00:01:12 -t 20 -o ./out -n hero-1280
 #   ./hero-loop.sh -i source.mp4 -s 72 -t 18 -p 80 -w 1920 -n hero-1920
+#   ./hero-loop.sh -i source.mp4 -s 80 -t 19 -C 6.67 -W 1920 -n hero-1280   # 1280x672 clip, 1920-wide poster
 #   ./hero-loop.sh -h
 #
 # The source is never modified. A downloaded source is kept as
@@ -26,6 +28,8 @@ START="0"
 DURATION="20"
 POSTER_AT=""
 WIDTH="1280"
+POSTER_WIDTH=""
+CROP_TOP="0"
 CRF="27"
 PRESET="slow"
 OUT="."
@@ -43,6 +47,10 @@ Usage: hero-loop.sh (-u URL | -i FILE) [options]
   -t SECONDS  Length of the clip (default 20; 15 to 25 loops best)
   -p AT       Poster frame time, seconds or hh:mm:ss (default: START)
   -w WIDTH    Output width in pixels, height follows the source ratio (default 1280)
+  -W WIDTH    Poster width in pixels (default: same as -w)
+  -C PERCENT  Crop this much off the top of the frame before scaling, e.g. 6.67 (default 0).
+              Use it when the frame has headroom (ceiling, lights) above the subject; a
+              shorter frame is also a smaller file. The output height stays an even number.
   -q CRF      x264 quality, lower = better/bigger (default 27; 26-28 for a hero)
   -P PRESET   x264 preset (default slow)
   -o DIR      Output folder (default .)
@@ -57,7 +65,7 @@ less visible when the clip is short.
 USAGE
 }
 
-while getopts ":u:i:s:t:p:w:q:P:o:n:c:yh" opt; do
+while getopts ":u:i:s:t:p:w:W:C:q:P:o:n:c:yh" opt; do
   case "$opt" in
     u) URL="$OPTARG" ;;
     i) INPUT="$OPTARG" ;;
@@ -65,6 +73,8 @@ while getopts ":u:i:s:t:p:w:q:P:o:n:c:yh" opt; do
     t) DURATION="$OPTARG" ;;
     p) POSTER_AT="$OPTARG" ;;
     w) WIDTH="$OPTARG" ;;
+    W) POSTER_WIDTH="$OPTARG" ;;
+    C) CROP_TOP="$OPTARG" ;;
     q) CRF="$OPTARG" ;;
     P) PRESET="$OPTARG" ;;
     o) OUT="$OPTARG" ;;
@@ -84,6 +94,7 @@ for tool in ffmpeg ffprobe cwebp; do
   command -v "$tool" >/dev/null || { echo "$tool not found; brew install ffmpeg webp" >&2; exit 1; }
 done
 POSTER_AT="${POSTER_AT:-$START}"
+POSTER_WIDTH="${POSTER_WIDTH:-$WIDTH}"
 mkdir -p "$OUT"
 
 if [[ -n "$URL" ]]; then
@@ -114,15 +125,20 @@ fi
 
 echo "Source : $INPUT"
 ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -show_entries format=duration -of default=nw=1 "$INPUT" | sed 's/^/         /'
-echo "Clip   : start $START, ${DURATION}s, width $WIDTH, crf $CRF, preset $PRESET"
+echo "Clip   : start $START, ${DURATION}s, width $WIDTH, crop top ${CROP_TOP}%, crf $CRF, preset $PRESET"
+
+# Crop first (a strip off the top, as a fraction of the source height; the
+# crop filter rounds to whole pixels), then scale. Without -C it is a no-op.
+CROP="crop=iw:ih*(1-${CROP_TOP}/100):0:ih*${CROP_TOP}/100,"
+[[ "$CROP_TOP" == "0" ]] && CROP=""
 
 # -ss before -i seeks fast; -an drops audio; scale keeps the ratio, height to an even number.
 ffmpeg -y -loglevel error -stats -ss "$START" -t "$DURATION" -i "$INPUT" -an \
-  -vf "scale=${WIDTH}:-2,fps=25" \
+  -vf "${CROP}scale=${WIDTH}:-2,fps=25" \
   -c:v libx264 -profile:v high -crf "$CRF" -preset "$PRESET" -pix_fmt yuv420p \
   -movflags +faststart "$MP4"
 
-ffmpeg -y -loglevel error -ss "$POSTER_AT" -i "$INPUT" -frames:v 1 -vf "scale=${WIDTH}:-2" "$POSTER_PNG"
+ffmpeg -y -loglevel error -ss "$POSTER_AT" -i "$INPUT" -frames:v 1 -vf "${CROP}scale=${POSTER_WIDTH}:-2" "$POSTER_PNG"
 cwebp -quiet -q 75 "$POSTER_PNG" -o "$POSTER"
 rm -f "$POSTER_PNG"
 

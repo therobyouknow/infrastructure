@@ -71,7 +71,14 @@ print_status "Starting deployment for ${DOMAIN} (${ENVIRONMENT}) - Release ${REL
 # Backup current database before deployment
 print_status "Backing up database..."
 DB_NUMBER=$(readlink "${CODE_PATH}/web/sites/default/settings.local.php" | grep -oP 'settings/\K[0-9]+')
-./backup_db.sh ${DOMAIN} ${DB_NUMBER}
+# Run as ./deploy.sh from the toolkit folder, or as `deploy` installed in
+# /usr/local/bin by install.sh (where backup_db has no .sh suffix).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -x "${SCRIPT_DIR}/backup_db.sh" ]; then
+    "${SCRIPT_DIR}/backup_db.sh" ${DOMAIN} ${DB_NUMBER}
+else
+    backup_db ${DOMAIN} ${DB_NUMBER}
+fi
 
 # Navigate to code directory
 cd "${CODE_PATH}"

@@ -108,12 +108,13 @@ cd "${CODE_PATH}"
 print_status "Setting up Drush symlink..."
 if [ -L "drush" ]; then
     print_status "Repository ships its own drush symlink ($(readlink drush)); keeping it (resolves after composer install)"
-elif [ -f "vendor/drush/drush/drush" ]; then
-    ln -sf vendor/drush/drush/drush drush
-    print_status "Drush symlink created"
 else
-    print_warning "Drush not found in vendor/drush/drush/drush"
-    print_warning "You may need to run composer install first"
+    # vendor/bin/drush is Composer's proxy and works through a symlink;
+    # vendor/drush/drush/drush does not (Drush 13 looks for drush.php beside
+    # the link). vendor/ doesn't exist until composer install, so the link
+    # dangles until then; drush_run.sh and deploy.sh need it to exist.
+    ln -sfn vendor/bin/drush drush
+    print_status "Drush symlink created: drush -> vendor/bin/drush (resolves after composer install)"
 fi
 
 print_status "Setting up Composer symlink..."

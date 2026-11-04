@@ -200,6 +200,8 @@ write_files:
       #!/bin/bash
       # server04 first-boot provisioning (called by cloud-init runcmd).
       set -euo pipefail
+      # cloud-init runs runcmd without HOME; Composer refuses to run without it.
+      export HOME=/root COMPOSER_HOME=/root/.config/composer COMPOSER_ALLOW_SUPERUSER=1
       export DEBIAN_FRONTEND=noninteractive
       TOOLKIT_REPO_URL="@@TOOLKIT_REPO_URL@@"
       TOOLKIT_REPO_REF="@@TOOLKIT_REPO_REF@@"
@@ -284,7 +286,7 @@ write_files:
 
       # --- Toolkit scripts: public repo -> /home/rob/scripts, then install.sh
       #     puts them on PATH as deploy, create_release, ... (no secrets involved)
-      sudo -u rob git clone --quiet --depth 1 --branch "${TOOLKIT_REPO_REF}" "${TOOLKIT_REPO_URL}" /home/rob/infrastructure
+      sudo -u rob -H git clone --quiet --depth 1 --branch "${TOOLKIT_REPO_REF}" "${TOOLKIT_REPO_URL}" /home/rob/infrastructure
       install -d -o rob -g rob -m 0755 /home/rob/scripts
       cp /home/rob/infrastructure/provision-site/toolkit/*.sh /home/rob/scripts/
       chown rob:rob /home/rob/scripts/*.sh

@@ -89,7 +89,7 @@ php -v 2>/dev/null | head -1 || fail "php missing"
 fpm=$(systemctl list-units --type=service --state=running --no-legend 'php*-fpm*' 2>/dev/null | awk '{print $1}' | head -1)
 [ -n "${fpm}" ] && pass "${fpm} running" || fail "no php-fpm service running"
 for ext in gd mbstring xml curl zip intl opcache mysqli pdo_mysql apcu; do
-    php -m 2>/dev/null | grep -qix "${ext}" && pass "php ext ${ext}" || fail "php ext ${ext} missing"; done
+    php -m 2>/dev/null | grep -qi "^\(Zend \)\?${ext}$" && pass "php ext ${ext}" || fail "php ext ${ext} missing"; done
 php -r 'echo "memory_limit=".ini_get("memory_limit")." upload_max_filesize=".ini_get("upload_max_filesize")."\n";' 2>/dev/null
 mariadb --version 2>/dev/null || fail "mariadb client missing"
 systemctl is-active -q mariadb && pass "mariadb active" || fail "mariadb not active"

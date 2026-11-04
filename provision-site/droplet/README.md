@@ -45,7 +45,7 @@ Then:
 
 ```bash
 ./verify-droplet.sh <ip-or-alias>   # the checklist; add a Host server04 block to ~/.ssh/config first
-ssh server04 ~/first-login.sh       # runs mariadb-secure-installation (sets the root password)
+ssh -t server04 ./first-login.sh    # runs mariadb-secure-installation (sets the root password)
 ```
 
 After that, sites are created with the toolkit exactly as on server03

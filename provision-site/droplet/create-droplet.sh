@@ -210,7 +210,7 @@ Next steps:
          IdentityFile ${ROB_SSH_IDENTITY_FILE:-~/.ssh/<your key>}
   2. Verify:   ${SCRIPT_DIR}/verify-droplet.sh server04
   3. First login (sets the MariaDB root password, never stored here):
-       ssh server04 ~/first-login.sh
+       ssh -t server04 ./first-login.sh
   4. Point DNS at ${IP}, then per site: create_site_structure, create_database,
      create_vhost, sudo certbot --apache -d <domain>   (see provision-site/toolkit/README.md)
 EOF

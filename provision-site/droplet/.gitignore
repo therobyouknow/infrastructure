@@ -1,0 +1,5 @@
+# Local settings and the rendered user-data (contains Rob's public keys and
+# any local overrides). The .example file and the template are tracked.
+droplet.env
+cloud-init.rendered.yaml
+*.log

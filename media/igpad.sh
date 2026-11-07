@@ -14,6 +14,7 @@
 #   ./igpad.sh -d . -m reel              # reel/story (1080x1920)
 #   ./igpad.sh -d . -f blur              # blurred copy of the video as the bars
 #   ./igpad.sh -d ~/Videos -m reel -f blur
+#   ./igpad.sh -d . -c                   # check only: does each file need padding?
 #
 # Originals are never touched. Output is <name>-out.mp4 alongside each input.
 
@@ -26,6 +27,7 @@ SUFFIX="-out"
 CRF=18
 PRESET="medium"
 OVERWRITE=0
+CHECK=0
 
 usage() {
   cat <<'EOF'
@@ -49,18 +51,26 @@ Options:
   -q CRF     x264 quality, lower = better/bigger (default: 18)
   -p PRESET  x264 preset (default: medium)
   -y         Overwrite existing output files
+  -c         Check only. Probe each file and report its size, aspect ratio,
+             codec, and whether padding is needed for MODE. Writes nothing.
   -h, --help Show this help
 
 Inputs:  .mp4 .MP4 .m4v .M4V .mov .MOV in DIR (not recursive).
 Outputs: <name><SUFFIX>.mp4 beside each input, H.264 / yuv420p / faststart.
          Files already ending in SUFFIX are skipped, so re-running is safe.
 
+Deciding whether to run this at all (-c does this for you):
+  Feed posts cap at 4:5 (1080x1350). A downloaded reel is 9:16 (1080x1920),
+  taller than 4:5, so posting it as-is gets it cropped top and bottom.
+  A 4:5 or squarer clip is left alone; only the codec is normalised.
+
 Examples:
+  ./igpad.sh -d ~/Downloads -c
   ./igpad.sh -d ~/Downloads
   ./igpad.sh -d ~/Downloads -m reel -f blur
   ./igpad.sh -d . -q 20 -p slow -y
 
-Requires: ffmpeg  (brew install ffmpeg)
+Requires: ffmpeg and ffprobe  (brew install ffmpeg)
 EOF
 }
 
@@ -83,7 +93,7 @@ for a in "$@"; do
 done
 set -- "${ARGS[@]}"
 
-while getopts ":d:m:f:s:q:p:yh" opt; do
+while getopts ":d:m:f:s:q:p:ych" opt; do
   case "$opt" in
     d) DIR="$OPTARG" ;;
     m) MODE="$OPTARG" ;;
@@ -92,16 +102,19 @@ while getopts ":d:m:f:s:q:p:yh" opt; do
     q) CRF="$OPTARG" ;;
     p) PRESET="$OPTARG" ;;
     y) OVERWRITE=1 ;;
+    c) CHECK=1 ;;
     h) usage; exit 0 ;;
     :) echo "Error: -$OPTARG needs a value." >&2; exit 1 ;;
     \?) echo "Error: unknown option -$OPTARG" >&2; usage >&2; exit 1 ;;
   esac
 done
 
-command -v ffmpeg >/dev/null 2>&1 || {
-  echo "Error: ffmpeg not found. Install it with:  brew install ffmpeg" >&2
-  exit 1
-}
+for tool in ffmpeg ffprobe; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "Error: $tool not found. Install it with:  brew install ffmpeg" >&2
+    exit 1
+  }
+done
 
 [ -d "$DIR" ] || { echo "Error: no such folder: $DIR" >&2; exit 1; }
 
@@ -132,6 +145,51 @@ shopt -u nullglob
 
 if [ "${#FILES[@]}" -eq 0 ]; then
   echo "No video files found in: $DIR"
+  exit 0
+fi
+
+# Check-only mode: say what would happen to each file, write nothing.
+if [ "$CHECK" -eq 1 ]; then
+  echo "Target: ${W}x${H} ($MODE) — check only, nothing written"
+  echo
+  for in_file in "${FILES[@]}"; do
+    base="${in_file##*/}"
+    # One probe for everything we need. key=value lines, because ffprobe's
+    # csv output ignores the order the fields were asked for.
+    w=""; h=""; codec=""; pixfmt=""
+    while IFS='=' read -r key val; do
+      case "$key" in
+        width)      w="$val" ;;
+        height)     h="$val" ;;
+        codec_name) codec="$val" ;;
+        pix_fmt)    pixfmt="$val" ;;
+      esac
+    done < <(ffprobe -v error -select_streams v:0 \
+      -show_entries stream=width,height,codec_name,pix_fmt -of default=nw=1 "$in_file" 2>/dev/null)
+    if [ -z "$w" ] || [ -z "$h" ]; then
+      echo "??     $base  (ffprobe could not read it)"
+      continue
+    fi
+
+    # Compare input ratio w/h with target W/H by cross-multiplying:
+    #   w/h < W/H  <=>  w*H < W*h   (input is TALLER than target)
+    if [ $((w * H)) -lt $((W * h)) ]; then
+      verdict="PAD left/right  (taller than ${W}:${H} — Instagram would crop top and bottom)"
+    elif [ $((w * H)) -gt $((W * h)) ]; then
+      verdict="PAD top/bottom  (wider than ${W}:${H})"
+    else
+      verdict="no padding needed (already ${W}:${H}); would only scale and re-encode"
+    fi
+
+    case "$codec,$pixfmt" in
+      h264,yuv420p) codec_note="codec ok" ;;
+      *) codec_note="codec $codec/$pixfmt -> would become h264/yuv420p (fixes thumbnails)" ;;
+    esac
+
+    echo "$base"
+    echo "       ${w}x${h}  $verdict"
+    echo "       $codec_note"
+  done
   exit 0
 fi
 

@@ -6,6 +6,58 @@ the pipx form is sometimes needed).
 
 ---
 
+## Workflow: reel → feed post
+
+The common case: download something from Instagram or YouTube, then post it to
+the Instagram feed without it being cropped or showing up as a blank icon in
+Finder. Three steps.
+
+**1. Download with the codec flags.** H.264 so Finder and Adobe Bridge can
+thumbnail it, without sacrificing resolution. Details under *Picking formats*.
+
+```bash
+yt-dlp -S "res,vcodec:h264,ext:mp4:m4a" --merge-output-format mp4 \
+  --cookies-from-browser chrome -o "%(uploader_id)s-%(upload_date)s-%(id)s.%(ext)s" "<url>"
+```
+
+**2. Check whether it needs padding.** Feed posts cap at 4:5 (1080x1350), so a
+reel at 9:16 (1080x1920) or a 2:3 clip (720x1080) gets cropped top and bottom
+if posted as-is. `igpad.sh -c` probes each file and says so without writing
+anything:
+
+```bash
+./igpad.sh -d ~/Downloads -c
+```
+
+| Input | Ratio | Feed post verdict |
+|---|---|---|
+| 1080x1920 (reel/story) | 9:16 | taller than 4:5 → pad left/right |
+| 720x1080 | 2:3 | taller than 4:5 → pad left/right |
+| 1080x1350 | 4:5 | fits, no bars needed |
+| 1080x1080 | 1:1 | fits; igpad adds bars top/bottom only to fill 4:5 |
+| 1920x1080 | 16:9 | fits; igpad adds bars top/bottom only to fill 4:5 |
+
+Rule of thumb: anything **taller than 4:5** will be cropped, and that is the
+case to care about. Wider clips are not cropped by Instagram, but padding them
+to 4:5 gives a bigger tile in the feed.
+
+The same check with `-m reel` tells you what happens for Reels/Stories at 9:16.
+
+The check also reports codec and pixel format, so a `vp9` or `hevc` download
+shows up here before you discover it won't thumbnail.
+
+**3. Pad.** Only if step 2 said so, or if you want the codec normalised anyway:
+
+```bash
+./igpad.sh -d ~/Downloads            # black bars
+./igpad.sh -d ~/Downloads -f blur    # blurred copy of the clip as the bars
+```
+
+Outputs go beside the originals as `<name>-out.mp4`. Originals are never
+touched.
+
+---
+
 ## Cookies
 
 Anything behind a login — Instagram stories, private or age-gated content —
@@ -219,4 +271,4 @@ ffprobe -v error -select_streams v:0 \
 ## See also
 
 - `igpad.sh` — pads clips to 1080x1350 (feed) or 1080x1920 (reel) so Instagram
-  doesn't crop them. Run `./igpad.sh --help`.
+  doesn't crop them. `-c` checks without writing. Run `./igpad.sh --help`.

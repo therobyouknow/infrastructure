@@ -43,7 +43,9 @@ Usage: igpad.sh -d DIR [options]
 
 Options:
   -d DIR     Folder to process (default: current folder, i.e. -d .)
-  -m MODE    feed  -> 1080x1350 (4:5, Instagram feed)   [default]
+  -m MODE    Where the OUTPUT is going. Sets the output size; the input can be
+             any size and is read from the file.
+             feed  -> 1080x1350 (4:5, Instagram feed post)   [default]
              reel  -> 1080x1920 (9:16, Reels/Stories)
   -f FILL    black -> solid black bars                  [default]
              blur  -> blurred, zoomed copy of the video as the bars
@@ -52,7 +54,8 @@ Options:
   -p PRESET  x264 preset (default: medium)
   -y         Overwrite existing output files
   -c         Check only. Probe each file and report its size, aspect ratio,
-             codec, and whether padding is needed for MODE. Writes nothing.
+             codec, and whether padding is needed to reach the -m output size.
+             Writes nothing.
   -h, --help Show this help
 
 Inputs:  .mp4 .MP4 .m4v .M4V .mov .MOV in DIR (not recursive).

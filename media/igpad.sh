@@ -9,11 +9,11 @@
 # needed — it never crops, it only adds bars.
 #
 # Usage:
-#   ./ig-pad.sh                          # feed (1080x1350), black bars, current folder
-#   ./ig-pad.sh -m reel                  # reel/story (1080x1920)
-#   ./ig-pad.sh -f blur                  # blurred copy of the video as the bars
-#   ./ig-pad.sh -d ~/Videos -m reel -f blur
-#   ./ig-pad.sh -h                       # full options
+#   ./igpad.sh                           # show help
+#   ./igpad.sh -d .                      # feed (1080x1350), black bars, current folder
+#   ./igpad.sh -d . -m reel              # reel/story (1080x1920)
+#   ./igpad.sh -d . -f blur              # blurred copy of the video as the bars
+#   ./igpad.sh -d ~/Videos -m reel -f blur
 #
 # Originals are never touched. Output is <name>-out.mp4 alongside each input.
 
@@ -29,9 +29,18 @@ OVERWRITE=0
 
 usage() {
   cat <<'EOF'
-Usage: ig-pad.sh [options]
+igpad.sh — pad videos so Instagram stops cropping them.
 
-  -d DIR     Folder to process (default: current folder)
+Instagram's tallest feed ratio is 4:5, so a taller clip (e.g. 720x1080, which
+is 2:3) gets centre-cropped top and bottom. This pads LEFT and RIGHT to reach
+4:5 instead. Reels/Stories are 9:16, taller than 2:3, so there the padding
+goes TOP and BOTTOM. Nothing is ever cropped — bars are only added.
+
+Usage: igpad.sh -d DIR [options]
+       igpad.sh -h | --help
+
+Options:
+  -d DIR     Folder to process (default: current folder, i.e. -d .)
   -m MODE    feed  -> 1080x1350 (4:5, Instagram feed)   [default]
              reel  -> 1080x1920 (9:16, Reels/Stories)
   -f FILL    black -> solid black bars                  [default]
@@ -40,13 +49,39 @@ Usage: ig-pad.sh [options]
   -q CRF     x264 quality, lower = better/bigger (default: 18)
   -p PRESET  x264 preset (default: medium)
   -y         Overwrite existing output files
-  -h         Show this help
+  -h, --help Show this help
+
+Inputs:  .mp4 .MP4 .m4v .M4V .mov .MOV in DIR (not recursive).
+Outputs: <name><SUFFIX>.mp4 beside each input, H.264 / yuv420p / faststart.
+         Files already ending in SUFFIX are skipped, so re-running is safe.
 
 Examples:
-  ./ig-pad.sh -d ~/Downloads
-  ./ig-pad.sh -d ~/Downloads -m reel -f blur
+  ./igpad.sh -d ~/Downloads
+  ./igpad.sh -d ~/Downloads -m reel -f blur
+  ./igpad.sh -d . -q 20 -p slow -y
+
+Requires: ffmpeg  (brew install ffmpeg)
 EOF
 }
+
+# No arguments at all, or a help request anywhere in them -> show help and stop.
+if [ "$#" -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+# getopts handles single-dash options only; fold --help into -h first.
+ARGS=()
+for a in "$@"; do
+  case "$a" in
+    --help) ARGS+=("-h") ;;
+    --*) echo "Error: unknown option '$a' (this script takes single-dash options)" >&2
+         echo "Try: igpad.sh --help" >&2
+         exit 1 ;;
+    *) ARGS+=("$a") ;;
+  esac
+done
+set -- "${ARGS[@]}"
 
 while getopts ":d:m:f:s:q:p:yh" opt; do
   case "$opt" in

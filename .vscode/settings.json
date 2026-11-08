@@ -1,0 +1,14 @@
+{
+  // Window colour so this project is recognisable among several VS Code windows.
+  // Title bar colour needs "window.titleBarStyle": "custom" in user settings.
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#2d5a27",
+    "titleBar.activeForeground": "#e8f5e9",
+    "titleBar.inactiveBackground": "#1f3d1b",
+    "titleBar.inactiveForeground": "#a5c9a1",
+    "activityBar.background": "#2d5a27",
+    "activityBar.foreground": "#e8f5e9",
+    "statusBar.background": "#2d5a27",
+    "statusBar.foreground": "#e8f5e9"
+  }
+}

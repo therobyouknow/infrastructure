@@ -106,7 +106,7 @@ if [[ -n "$URL" ]]; then
   else
     cookie_opt=()
     [[ -n "$COOKIES" ]] && cookie_opt=(--cookies-from-browser "$COOKIES")
-    yt-dlp "${cookie_opt[@]}" --no-playlist -f "bv*[height<=1080][ext=mp4]/bv*[height<=1080]/bv*" \
+    yt-dlp ${cookie_opt[@]+"${cookie_opt[@]}"} --no-playlist -f "bv*[height<=1080][ext=mp4]/bv*[height<=1080]/bv*" \
       -o "$OUT/source.%(ext)s" "$URL"
     INPUT=$(ls "$OUT"/source.* | head -1)
   fi

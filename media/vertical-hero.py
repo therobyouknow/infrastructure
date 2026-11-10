@@ -3,13 +3,14 @@
 vertical-hero.py: turn a vertical (9:16) social-media clip into a widescreen,
 silent, looping website hero.
 
-The vertical clip plays inside a wide frame. At every scene change it fades
-out, moves to a new position across the frame, and fades back in with the
-new scene, so the eye travels across the screen as the montage runs. The
-rest of the frame is a blurred, darkened copy of the same footage (or a flat
-colour). Everything that decides the look lives in an "edit decision list",
-a small JSON file, so the result can be tuned by editing numbers and
-re-rendering rather than by re-cutting in an editor.
+The vertical clip plays inside a wide frame. At every scene change the old
+scene holds its last frame and fades out slowly while the new scene fades in
+quickly at a new position across the frame, so for a moment two clips share
+the screen and the eye travels across it as the montage runs. The rest of
+the frame is a flat colour (black by default) or a blurred, darkened copy of
+the same footage. Everything that decides the look lives in an "edit
+decision list", a small JSON file, so the result can be tuned by editing
+numbers and re-rendering rather than by re-cutting in an editor.
 
 Usage
   vertical-hero.py --detect clip.mp4 > edl.json       # write a starter EDL with the scene cuts
@@ -23,16 +24,18 @@ EDL keys (all optional except "source"; defaults shown)
   fps             25
   cuts            [1.4, 2.57, ...]     scene-change times in seconds (from --detect; edit freely)
   start, end      0, <clip length>     trim the source
-  clip_height     0.82                 vertical clip height as a fraction of the frame height
-  fade            0.12                 seconds for each fade out / fade in around a cut
+  clip_height     0.66                 vertical clip height as a fraction of the frame height
+  fade_in         0.1                  seconds for a new scene to fade in at its new position
+  fade_out        0.7                  seconds for the old scene to fade out (it holds its last frame
+                                       while the new one already plays, so the two overlap)
   gutter          0.06                 fraction of the frame width kept clear at the left and right edges
   pattern         "pingpong"           how the clip moves: "pingpong" (left to right and back),
                                        "alternate" (left, right, left ...), "sweep" (left to right, then jump back),
                                        or "positions" (use the list below)
   positions       [0, 0.5, 1]          only for pattern "positions": 0 = left gutter, 1 = right gutter, cycled per scene
-  background      "blur"               "blur" (blurred footage), or a colour such as "#000000"
-  blur            40                   blur radius for the background
-  background_dim  0.35                 0 = untouched background, 1 = black
+  background      "#000000"            a colour, or "blur" (blurred footage)
+  blur            60                   blur radius for the blurred background
+  background_dim  0.45                 0 = untouched blurred background, 1 = black
   poster_at       <middle of a scene>  time for the poster frame
   crf             27                   x264 quality, lower = better / bigger (26-30 for a hero)
 
@@ -80,9 +83,9 @@ def starter_edl(path):
         'width': 1920, 'height': 1008, 'fps': 25,
         'start': 0, 'end': round(dur, 3),
         'cuts': detect_cuts(path),
-        'clip_height': 0.82, 'fade': 0.12, 'gutter': 0.06,
+        'clip_height': 0.66, 'fade_in': 0.1, 'fade_out': 0.7, 'gutter': 0.06,
         'pattern': 'pingpong', 'positions': [0, 0.5, 1],
-        'background': 'blur', 'blur': 40, 'background_dim': 0.35,
+        'background': '#000000', 'blur': 60, 'background_dim': 0.45,
         'crf': 27,
     }
 
@@ -119,9 +122,12 @@ def build(edl, preview=False):
     fps = int(edl.get('fps', 25))
     start = float(edl.get('start', 0))
     end = float(edl.get('end', sdur))
-    fade = float(edl.get('fade', 0.12))
+    length = end - start
+    # "fade" from older EDLs sets both.
+    fade_in = float(edl.get('fade_in', edl.get('fade', 0.1)))
+    fade_out = float(edl.get('fade_out', edl.get('fade', 0.7)))
     gutter = float(edl.get('gutter', 0.06))
-    clip_h = even(H * float(edl.get('clip_height', 0.82)))
+    clip_h = even(H * float(edl.get('clip_height', 0.66)))
     clip_w = even(clip_h * sw / sh)
     cuts = [c for c in edl.get('cuts', []) if start < c < end]
     bounds = [start] + cuts + [end]
@@ -130,30 +136,44 @@ def build(edl, preview=False):
     left = int(W * gutter)
     right = W - clip_w - left
     y = (H - clip_h) // 2
-    bg = str(edl.get('background', 'blur'))
-    dim = float(edl.get('background_dim', 0.35))
-    blur = float(edl.get('blur', 40))
+    bg = str(edl.get('background', '#000000'))
+    dim = float(edl.get('background_dim', 0.45))
+    blur = float(edl.get('blur', 60))
     crf = int(edl.get('crf', 27))
     out_base = edl.get('output', 'hero-vertical')
 
-    parts = []
-    segs = []
+    # The source is split once into the background and one stream per scene.
+    # Each scene is trimmed, moved to its place on the timeline (setpts), and
+    # laid over the background in turn. The old scene keeps playing past the
+    # cut on its held last frame (tpad clone) while it fades out, so it
+    # overlaps the next scene, which fades in fast at its own position.
+    parts = [f'[0:v]split={n + 1}[bgsrc]' + ''.join(f'[src{i}]' for i in range(n))]
+    if bg == 'blur':
+        parts.append(f'[bgsrc]trim=start={start}:end={end},setpts=PTS-STARTPTS,fps={fps},'
+                     f'scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},'
+                     f'gblur=sigma={blur},colorlevels=rimax={1 - dim}:gimax={1 - dim}:bimax={1 - dim}[bg]')
+    else:
+        parts.append(f'[bgsrc]nullsink;color=c={bg}:s={W}x{H}:r={fps}:d={length}[bg]')
+    chain = '[bg]'
     for i in range(n):
         a, b = bounds[i], bounds[i + 1]
-        seg_len = b - a
-        f = min(fade, seg_len / 3)
+        seg = b - a
+        fi = min(fade_in, seg / 2)
+        last = (i == n - 1)
+        # The last scene fades out inside the clip so the loop joins cleanly.
+        hold = 0 if last else fade_out
+        fo_start = (seg - fade_out) if last else seg
         x = int(left + (right - left) * pos[i])
-        parts.append(f'[0:v]trim=start={a}:end={b},setpts=PTS-STARTPTS,fps={fps},split[bg{i}][fg{i}]')
-        if bg == 'blur':
-            parts.append(f'[bg{i}]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},'
-                         f'gblur=sigma={blur},colorlevels=rimax={1 - dim}:gimax={1 - dim}:bimax={1 - dim}[b{i}]')
-        else:
-            parts.append(f'[bg{i}]nullsink;color=c={bg}:s={W}x{H}:r={fps}:d={seg_len}[b{i}]')
-        parts.append(f'[fg{i}]scale={clip_w}:{clip_h},format=yuva420p,'
-                     f'fade=t=in:st=0:d={f}:alpha=1,fade=t=out:st={seg_len - f}:d={f}:alpha=1[c{i}]')
-        parts.append(f'[b{i}][c{i}]overlay=x={x}:y={y}:format=auto:shortest=1,format=yuv420p[s{i}]')
-        segs.append(f'[s{i}]')
-    parts.append(''.join(segs) + f'concat=n={n}:v=1:a=0[v]')
+        t0 = a - start
+        parts.append(
+            f'[src{i}]trim=start={a}:end={b},setpts=PTS-STARTPTS,fps={fps},'
+            f'tpad=stop_mode=clone:stop_duration={hold},'
+            f'scale={clip_w}:{clip_h},format=yuva420p,'
+            f'fade=t=in:st=0:d={fi}:alpha=1,fade=t=out:st={max(fo_start, 0)}:d={fade_out}:alpha=1,'
+            f'setpts=PTS+{t0}/TB[c{i}]')
+        parts.append(f'{chain}[c{i}]overlay=x={x}:y={y}:eof_action=pass:format=auto[o{i}]')
+        chain = f'[o{i}]'
+    parts.append(f'{chain}trim=duration={length},format=yuv420p[v]')
     graph = ';'.join(parts)
 
     mp4 = f'{out_base}.mp4'
@@ -161,7 +181,8 @@ def build(edl, preview=False):
            '-an', '-c:v', 'libx264', '-profile:v', 'high', '-pix_fmt', 'yuv420p',
            '-preset', 'ultrafast' if preview else 'slow', '-crf', str(34 if preview else crf),
            '-movflags', '+faststart', '-r', str(fps), mp4]
-    print(f'{n} scenes, clip {clip_w}x{clip_h} in {W}x{H}, positions {[round(p, 2) for p in pos]}')
+    print(f'{n} scenes, clip {clip_w}x{clip_h} in {W}x{H}, fade in {fade_in}s / out {fade_out}s, '
+          f'positions {[round(p, 2) for p in pos]}')
     run(cmd)
     size = os.path.getsize(mp4)
     print(f'wrote {mp4} ({size / 1024 / 1024:.1f} MB)')

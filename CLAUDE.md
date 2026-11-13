@@ -66,6 +66,12 @@ Video prep for Instagram publishing.
   so there the padding goes **top and bottom** to reach 1080x1920. It never
   crops. Outputs H.264 / yuv420p / faststart, which also makes the results
   thumbnail correctly in macOS Finder and Adobe Bridge.
+- `igsaved.py` — downloads every saved post (bookmark) from an Instagram data
+  export into one folder per author, collection name in the filename. Uses
+  gallery-dl (images + videos), yt-dlp as fallback, and `--pad` hands new
+  videos to `igpad.sh`. Python 3.10+ stdlib only, because it has to parse JSON
+  and keep a resume state, which Bash 3.2 makes painful. Progress lives in
+  `OUT/.igsaved/`; re-runs are idempotent.
 - `hero-loop.sh` — loop/hero video generation.
 - `download.md` — yt-dlp cookbook: cookies, Instagram reels/stories/highlights,
   format selection, and fixing files that won't thumbnail.

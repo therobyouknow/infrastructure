@@ -29,3 +29,4 @@ databases/*sql*
 
 # Synced Drupal files directory (created by sync_files.sh)
 **/web/sites/default/files/
+__pycache__/

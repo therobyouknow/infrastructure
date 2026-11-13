@@ -268,7 +268,126 @@ ffprobe -v error -select_streams v:0 \
 
 ---
 
+## Saved posts (bookmarks) from a data export
+
+`igsaved.py` takes Instagram's "Download your information" export, pulls out
+every saved post and collection, and downloads the media into one folder per
+author, with the collection name and author in each filename:
+
+```
+ig-saved/
+  alice_art/
+    alice_art_Events_20250309_C1a2B3c_01.jpg       # saved in "Events"
+    alice_art_Events_20250309_C1a2B3c_02.mp4       # same post, 2nd carousel item
+    alice_art_Events_20250309_C1a2B3c_02-out.mp4   # igpad output, with --pad
+    alice_art_20240101_D4e5F6g_01.jpg              # saved, but in no collection
+  bob.video/
+    bob.video_Events+Food_20250310_H7i8J9k_01.mp4  # in two collections
+  saved-posts.csv                                   # every bookmark + status
+  .igsaved/                                         # progress; re-runs skip what's done
+```
+
+**1. Request the export.** Instagram → Settings → Accounts Center → Your
+information and permissions → Download your information (the menus move; the
+search box in Settings finds it). Choose "Some of your information" → *Saved*,
+and on the next screen set **Date range: All time**. The default is *Last
+year*, and it silently drops older bookmarks *and* every collection created
+before that window — a Nov 2026 export with the default range came back with
+1757 posts and one collection, the all-time one with 2215 posts and all 15.
+Format can be JSON or HTML; both parse, JSON is the cleaner source. Instagram
+emails a link a few hours later; the ZIP may arrive in several parts — pass
+them all, the tool finds `your_instagram_activity/saved/saved_posts.*` and
+`saved_collections.*` wherever they are.
+
+Format notes, for when Instagram changes it again (`--list` showing 0 posts is
+the symptom; `parse_exports` in the script is where to look):
+
+- JSON before 2026: `saved_saved_media` / `saved_saved_collections` with
+  `string_map_data`.
+- JSON from at least Nov 2026: flat list of entries with `label_values`, the
+  author under an "Owner" group, collections carrying their member posts under
+  a "Media" group. A single collection is written as a bare object, not a list.
+- HTML: nested tables with the same fields; parsed by matching the export's
+  exact cell markup, so a restyle of the HTML would break it. Its dates are
+  rendered in Meta's Pacific time but labelled "UTC"; the script derives the
+  real offset from the page header, where the same instant appears both ways,
+  and corrects every date (verified to the minute against a JSON export of the
+  same account, Nov 2026).
+
+**2. Get cookies.** Instagram serves almost nothing to a logged-out client, so
+use a cookies file (see *Cookies* above). `--cookies-from-browser chrome` works
+too but on macOS needs Full Disk Access.
+
+**3. Look before downloading.**
+
+```bash
+./igsaved.py ~/Downloads/instagram-*.zip --list                   # collections and authors, with counts
+./igsaved.py ~/Downloads/instagram-*.zip -o ~/ig-saved --dry-run  # the plan, nothing written
+```
+
+**4. Download in batches.** Bulk fetching against a logged-in account is
+exactly what Instagram rate-limits, so keep runs small and let the tool sleep
+between posts (default 4–10 s). Progress is saved after every post, so Ctrl-C
+is safe and re-running continues where it stopped.
+
+```bash
+./igsaved.py ~/Downloads/instagram-*.zip -o ~/ig-saved -c ~/ig-cookies.txt -n 40
+./igsaved.py ~/Downloads/instagram-*.zip -o ~/ig-saved -c ~/ig-cookies.txt --collection Events
+```
+
+**Just the recent ones.** Posts are processed most-recently-saved first, so a
+limited run always starts with what you bookmarked last. `--since` narrows it
+to a window, by the date *you saved* the post (the only date the export has;
+the date in each filename is when the post was published):
+
+```bash
+./igsaved.py export.zip -o ~/ig-saved -c ~/ig-cookies.txt --since 3m                 # last three months
+./igsaved.py export.zip -o ~/ig-saved -c ~/ig-cookies.txt --since 2026-10-01 --until 2026-11-01
+./igsaved.py export.zip -o ~/ig-saved -c ~/ig-cookies.txt --collection Events --since 90d
+```
+
+`--list` prints a saved-per-month table to help pick the window. Note that a
+post is only in a collection if you filed it there; recently saved posts that
+you haven't filed yet are found by `--since` without `--collection`.
+`--order oldest` or `--order author` changes the processing order.
+
+Five failures in a row aborts the run — that is nearly always rate limiting or
+an expired session, not five deleted posts. Wait an hour (or refresh cookies)
+and re-run with `--retry-failed`. Genuinely deleted or private posts stay
+listed as `failed` in `saved-posts.csv` with the reason.
+
+**5. Pad reels for feed posting (optional).** `--pad` runs `igpad.sh` on every
+author folder that received new videos, so a 9:16 reel becomes a 4:5
+`<name>-out.mp4` beside the original. Originals are kept. It is off by default
+because re-encoding hundreds of reels takes a while and you may only want a
+few; the same thing later, by hand, is:
+
+```bash
+./igsaved.py ... --pad                       # or --pad --pad-fill blur
+./igpad.sh -d ~/ig-saved/alice_art           # same result for one folder, afterwards
+```
+
+**How it downloads.** gallery-dl does the fetching because it handles image
+posts, videos and carousels alike; yt-dlp's Instagram extractor is video-only.
+If gallery-dl fails on a post, yt-dlp is tried as a fallback (`--no-fallback`
+to skip that). Both tools use the cookies you pass.
+
+**Without an export.** gallery-dl can also read saved posts straight from the
+logged-in account: `gallery-dl --cookies FILE "https://www.instagram.com/USERNAME/saved/"`
+(or `.../saved/COLLECTION-NAME/COLLECTION-ID/` for one collection, URL copied
+from the browser). That gets you the files but not the per-author folders or
+collection names in filenames, and it has to page through Instagram's API for
+the list, which is the rate-limited part. The export route gets the list for
+free.
+
+Requires: `brew install gallery-dl yt-dlp ffmpeg`. Python 3.10+, standard
+library only.
+
+---
+
 ## See also
 
 - `igpad.sh` — pads clips to 1080x1350 (feed) or 1080x1920 (reel) so Instagram
   doesn't crop them. `-c` checks without writing. Run `./igpad.sh --help`.
+- `igsaved.py` — downloads all saved posts from a data export, per author, and
+  can hand the videos to `igpad.sh`. Run `./igsaved.py --help`.

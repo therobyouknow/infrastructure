@@ -111,6 +111,27 @@ yt-dlp --cookies ~/Downloads/instagram.com_cookies.txt "<url>"
 More robust than `--cookies-from-browser`: survives macOS permission changes and
 Chrome's cookie encryption shifting about.
 
+### Cookies file straight from the browser, no extension
+
+gallery-dl can read the browser's cookies once and write them out as a
+cookies.txt. One-off cost: Full Disk Access for the terminal (above) and one
+Keychain prompt for Chrome's cookie key. After that the file works anywhere,
+including WSL2, where Windows Chrome's cookies can't be read directly.
+
+```bash
+gallery-dl --cookies-from-browser chrome/instagram.com   --cookies-export ~/ig-cookies.txt -s "https://www.instagram.com/p/DfPaTstI5AS/"
+chmod 600 ~/ig-cookies.txt
+grep -c sessionid ~/ig-cookies.txt    # 1 = good; 0 = not logged in, or wrong profile
+```
+
+`/instagram.com` limits the export to Instagram's cookies rather than every
+site you are logged into, and `-s` simulates rather than downloads. For a
+non-default Chrome profile use `"chrome/instagram.com:Profile 1"`. The file is
+your login in plaintext: keep it outside any repo and treat it like a password.
+It stays valid for months, until you log out of Instagram in that browser.
+Revoke Full Disk Access again afterwards if you prefer; the file no longer
+needs it.
+
 ---
 
 ## Instagram

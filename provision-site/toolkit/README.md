@@ -57,8 +57,11 @@ Each site follows this structure:
 
 ## Scripts Overview
 
-**Server scripts** (1–8, 11–13) run on the server and can be installed system-wide with `install.sh`.
-**Local-dev scripts** (9–10, 14–15) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
+**Server scripts** (1–8, 11–13, 16–17) run on the server and can be installed system-wide with `install.sh`.
+**Local-dev scripts** (9–10, 14–15, 18) run on your workstation (macOS or Linux) and connect to the server over SSH. Run them standalone with `./`.
+
+**The standard way to release a site is `release` (16); read [RELEASING.md](RELEASING.md) first.**
+PHP security updates: [php-security-updates.md](php-security-updates.md) (17, 18).
 
 ### 1. create_site_structure.sh
 Creates the complete directory structure for a new site.
@@ -389,6 +392,40 @@ Fetches a database dump from a remote server by environment name and imports it 
 - Drops the local ddev database and imports the downloaded dump (ddev handles `.gz` natively)
 - Prints the local file path
 
+### 16. release.sh
+The standard release: a pushed tag becomes a fresh release folder and is deployed, in one command. Wraps `create_release`, the settings and files symlinks, `deploy`, and `drush config:import`. Refuses a version that has no tag on the remote.
+
+**Usage:**
+```bash
+./release.sh [-y] [-s N] [domain] [environment] [version] [git_repo_url] [git_ref]
+```
+
+**Examples:**
+```bash
+./release.sh selectamixmusic.com live 0.1.3                      # repo and settings number taken from the current live release
+./release.sh thesolentmetropolitan.com staging 0.3.1-staging https://github.com/x/y.git feat/menu   # a branch, staging only
+```
+
+See [RELEASING.md](RELEASING.md).
+
+### 17. php_security_update.sh
+Checks for, and applies, a PHP security update from the Ubuntu archive with an HTTP baseline of every vhost before and after. Run with `sudo` on the server.
+
+**Usage:**
+```bash
+sudo ./php_security_update.sh -c | -b | -a [-f] [-d] [-y]
+```
+
+See [php-security-updates.md](php-security-updates.md).
+
+### 18. php_usn_poll.sh *(local-dev)*
+Watches servers for a PHP security update and runs `php_security_update -a` on each the moment it appears.
+
+**Usage:**
+```bash
+./php_usn_poll.sh [-i MINUTES] [-u HH:MM] [-n] [-f] ssh_host [ssh_host ...]
+```
+
 ## Complete Workflow: Setting Up a New Site
 
 Here's the typical workflow for setting up a new Drupal site:
@@ -440,6 +477,18 @@ cd /var/www/05/example.com/releases/1.0.0/code
 
 ## Workflow: Deploying a New Release
 
+The standard (see [RELEASING.md](RELEASING.md)): tag locally, then one command on the server.
+
+```bash
+# local
+git tag -a 2.0.5 -m "2.0.5" && git push origin main 2.0.5
+# server: create_release at the tag, link settings + files, deploy, config import
+release example.com staging 2.0.5
+release example.com live 2.0.5
+```
+
+The individual steps `release` performs, for when one of them needs doing by hand:
+
 ```bash
 # 1. Create new release
 ./create_release.sh example.com 2.0.5 https://github.com/user/repo.git
@@ -462,6 +511,8 @@ ln -sf ../../../../../../deployment_environments/staging/assets/public/files fil
 ```
 
 ## Workflow: Updating Code in Existing Release
+
+Not the standard any more (RELEASING.md says why); kept for staging experiments.
 
 ```bash
 # 1. Navigate to release code directory

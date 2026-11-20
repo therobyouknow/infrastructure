@@ -47,6 +47,10 @@ SCRIPTS=(
     "restore_db.sh"
     "site_status.sh"
     "drush_run.sh"
+    "install_cron.sh"
+    "deny_installer.sh"
+    "release.sh"
+    "php_security_update.sh"
 )
 
 # Note: fetch_db_dump.sh and sync_files.sh are local-dev scripts
@@ -95,6 +99,8 @@ echo "  backup_db [category] [domain] [db_number]"
 echo "  restore_db [category] [domain] [db_number] [backup_file]"
 echo "  site_status [category]"
 echo "  drush_run [category] [domain] [environment] [command]"
+echo "  release [-y] [-s N] [domain] [environment] [version] [git_repo] [git_ref]"
+echo "  php_security_update -c | -b | -a [-f] [-d] [-y]   (run with sudo)"
 echo ""
 echo "Local-dev scripts (not installed, run standalone from your workstation):"
 echo "  ./fetch_db_dump.sh [ssh_host] [category] [domain] [db_number]"

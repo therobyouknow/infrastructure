@@ -130,6 +130,14 @@ else
     print_warning "No running php-fpm service found; reload it by hand so OPcache does not serve old code"
 fi
 
+# Where Apache runs PHP as mod_php (server03: prefork + php_module), the FPM
+# reload above does not touch the OPcache that is actually serving pages; a
+# graceful Apache reload re-initialises it.
+if sudo apache2ctl -M </dev/null 2>/dev/null | grep -q php_module; then
+    print_status "Apache runs mod_php; reloading apache2 (clears its OPcache)..."
+    sudo systemctl reload apache2
+fi
+
 # Run Drush updates
 print_status "Running Drush database updates (${DRUSH_CMD})..."
 ${DRUSH_CMD} updb -y
